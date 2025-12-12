@@ -23,7 +23,9 @@ const Card = ({ data, viewMode, onClick, isSelected }) => {
 
   let baseClass = `w-full h-20 md:h-28 lg:h-32 rounded-lg flex items-center justify-center font-bold text-sm md:text-xl select-none transition-all shadow-md p-1 text-center break-words leading-tight border-b-4 active:border-b-0 active:translate-y-1`;
   const selectionClass = isSelected ? "ring-4 ring-yellow-400 scale-105 z-10 animate-pulse" : "";
-  const revealedClass = isRevealed ? "opacity-40 grayscale border-b-0 translate-y-1" : "cursor-pointer hover:scale-105";
+  const revealedClass = isRevealed 
+    ? "opacity-90 ring-4 ring-black/30 border-b-0 translate-y-1 saturate-150" 
+    : "cursor-pointer hover:scale-105";
   const colorClass = colors[displayType] || colors['neutral'];
 
   return (
