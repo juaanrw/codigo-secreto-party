@@ -345,6 +345,13 @@ export default function App() {
     setView('role_selection');
   };
 
+  const copyLink = () => {
+    const url = `${window.location.origin}?room=${roomCode}`;
+    navigator.clipboard.writeText(url);
+    setLinkCopied(true);
+    setTimeout(() => setLinkCopied(false), 2000);
+  };
+
   const goHome = () => {
     if (confirm("¿Salir?")) { setRoomCode(''); setGameData(null); setView('home'); window.history.pushState({}, '', window.location.pathname); }
   };
@@ -504,9 +511,12 @@ export default function App() {
                <button onClick={goHome} className="bg-slate-700 p-1.5 rounded w-8 h-8">🏠</button>
                <button onClick={() => setShowRules(true)} className="bg-slate-700 p-1.5 rounded w-8 h-8 font-bold">?</button>
             </div>
-            <div className="flex flex-col cursor-pointer" onClick={() => {navigator.clipboard.writeText(window.location.href); setLinkCopied(true); setTimeout(()=>setLinkCopied(false), 2000)}}>
-                <span className="text-[9px] text-gray-400 font-bold tracking-widest">SALA {linkCopied && <span className="text-green-400">COPIADO</span>}</span>
+            <div className="flex flex-col cursor-pointer" onClick={copyLink}>
+              <span className="text-[10px] text-gray-400 font-bold tracking-widest flex items-center gap-1">SALA {linkCopied && <span className="text-green-400"> (COPIADO)</span>}</span>
+              <div className="flex items-center gap-2">
                 <span className="text-xl font-black text-amber-500 tracking-widest leading-none">{roomCode}</span>
+                <span className="text-gray-500 text-xs">🔗</span>
+              </div>
             </div>
         </div>
         
