@@ -283,6 +283,53 @@ const RulesModal = ({ onClose }) => (
   </div>
 );
 
+// --- COMPONENTE DE FONDO ANIMADO ---
+const AnimatedBackground = () => {
+  // Generamos 60 cuadrados (suficientes para llenar móviles y PC)
+  const squares = Array.from({ length: 60 });
+
+  return (
+    <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+      {/* La rejilla de cartas de fondo */}
+      <div className="grid grid-cols-6 md:grid-cols-10 gap-2 h-full w-full p-2 opacity-40">
+        {squares.map((_, i) => (
+          <BgSquare key={i} />
+        ))}
+      </div>
+      
+      {/* La capa grisácea/oscura para que se lea el texto */}
+      <div className="absolute inset-0 bg-slate-900/90 backdrop-blur-[2px]"></div>
+    </div>
+  );
+};
+
+// Cuadrado individual que cambia de color solo
+const BgSquare = () => {
+  // Más 'amber' para que predomine el neutral, salpicado de colores
+  const colors = [
+    "bg-amber-200", "bg-amber-200", "bg-amber-200", 
+    "bg-red-600", "bg-blue-600", "bg-gray-900"
+  ];
+  const [color, setColor] = useState(colors[Math.floor(Math.random() * colors.length)]);
+
+  useEffect(() => {
+    // Cada cuadrado decide cuándo cambiar (entre 2 y 6 segundos)
+    const intervalTime = 2000 + Math.random() * 4000;
+    
+    const interval = setInterval(() => {
+      const newColor = colors[Math.floor(Math.random() * colors.length)];
+      setColor(newColor);
+    }, intervalTime);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <div 
+      className={`w-full h-full rounded-md transition-colors duration-[2000ms] ease-in-out ${color}`} 
+    />
+  );
+};
 
 // --- APP PRINCIPAL ---
 export default function App() {
@@ -472,19 +519,36 @@ export default function App() {
 
   if (view === 'home') {
     return (
-      <div className="min-h-screen bg-slate-900 flex flex-col items-center justify-center text-white p-4">
+      <div className="min-h-screen bg-slate-900 flex flex-col items-center justify-center text-white p-4 relative overflow-hidden">
+        
+        <AnimatedBackground />
+
+        {/* Modales */}
         {showRules && <RulesModal onClose={() => setShowRules(false)} />}
         {activeInfo && <InfoModal title={activeInfo.title} text={activeInfo.desc} onClose={() => setActiveInfo(null)} />}
-        <h1 className="text-5xl font-black mb-6 text-amber-500 tracking-wider text-center drop-shadow-lg">CÓDIGO SECRETO</h1>
-        <div className="bg-slate-800 p-6 rounded-2xl w-full max-w-sm shadow-2xl border border-slate-700 space-y-6">
-          <div className="space-y-4 bg-slate-900/50 p-4 rounded-xl">
-            <div className="flex items-center justify-between"><label className="flex items-center space-x-3 cursor-pointer"><input type="checkbox" checked={config.isParty} onChange={(e) => setConfig({ ...config, isParty: e.target.checked })} className="w-5 h-5 accent-amber-500" /><span>🎉 Modo Fiesta</span></label><InfoBtn id="party" title="Modo Fiesta" desc="Cada ronda el juego indicará cómo se dará la pista (rimando, dibujando, gesticulando o normal)." /></div>
-            <div className="flex items-center justify-between"><label className="flex items-center space-x-3 cursor-pointer"><input type="checkbox" checked={config.useTimer} onChange={(e) => setConfig({ ...config, useTimer: e.target.checked })} className="w-5 h-5 accent-amber-500" /><span>⏱️ Temporizador</span></label><InfoBtn id="timer" title="Temporizador" desc="Temporizador de dos minutos por turnos (de referencia, pero no se salta de turno hasta que se haga click a pasar turno)" /></div>
-            <div className="flex items-center justify-between"><label className="flex items-center space-x-3 cursor-pointer"><input type="checkbox" checked={config.hardMode} onChange={(e) => setConfig({ ...config, hardMode: e.target.checked })} className="w-5 h-5 accent-amber-500" /><span>💀 Modo Difícil</span></label><InfoBtn id="hard" title="Modo Difícil" desc="Los capitanes sólo podrán saber sus propias palabras." /></div>
-          </div>
-          <button onClick={createRoom} className="w-full bg-amber-500 hover:bg-amber-400 text-black font-black py-4 rounded-xl text-lg shadow-lg active:scale-95">CREAR PARTIDA</button>
-          <div className="flex gap-2 border-t border-slate-700 pt-4"><input type="text" placeholder="CÓDIGO" id="codeInput" maxLength={4} className="w-full p-3 rounded-lg text-black bg-slate-200 uppercase font-bold text-center text-lg" /><button onClick={() => joinRoom(document.getElementById('codeInput').value)} className="bg-blue-600 hover:bg-blue-500 font-bold px-6 rounded-lg text-white">ENTRAR</button></div>
-          <button onClick={() => setShowRules(true)} className="w-full text-slate-400 text-sm hover:text-white transition underline">Leer Reglas</button>
+
+        {/* 2. AÑADIMOS 'relative z-10' AL CONTENIDO PARA QUE FLOTE ENCIMA */}
+        <div className="relative z-10 w-full max-w-sm flex flex-col items-center">
+            
+            <h1 className="text-5xl font-black mb-6 text-amber-500 tracking-wider text-center drop-shadow-lg">CÓDIGO SECRETO</h1>
+            
+            <div className="bg-slate-800/80 backdrop-blur-md p-6 rounded-2xl w-full shadow-2xl border border-slate-700 space-y-6">
+              <div className="space-y-4 bg-slate-900/50 p-4 rounded-xl">
+                 <p className="text-xs uppercase text-gray-400 font-bold tracking-widest mb-2 border-b border-slate-700 pb-2">Configuración de Partida</p>
+                 <div className="flex items-center justify-between"><label className="flex items-center space-x-3 cursor-pointer"><input type="checkbox" checked={config.isParty} onChange={(e) => setConfig({...config, isParty: e.target.checked})} className="w-5 h-5 accent-amber-500" /><span>🎉 Modo Fiesta</span></label><InfoBtn id="party" title="Modo Fiesta" desc="Retos como Mimo o Dibujo." /></div>
+                 <div className="flex items-center justify-between"><label className="flex items-center space-x-3 cursor-pointer"><input type="checkbox" checked={config.useTimer} onChange={(e) => setConfig({...config, useTimer: e.target.checked})} className="w-5 h-5 accent-amber-500" /><span>⏱️ Temporizador</span></label><InfoBtn id="timer" title="Temporizador" desc="2 min por turno." /></div>
+                 <div className="flex items-center justify-between"><label className="flex items-center space-x-3 cursor-pointer"><input type="checkbox" checked={config.hardMode} onChange={(e) => setConfig({...config, hardMode: e.target.checked})} className="w-5 h-5 accent-amber-500" /><span>💀 Modo Difícil</span></label><InfoBtn id="hard" title="Modo Difícil" desc="Timer se pausa entre turnos. Privacidad de dispositivo." /></div>
+              </div>
+
+              <button onClick={createRoom} className="w-full bg-amber-500 hover:bg-amber-400 text-black font-black py-4 rounded-xl text-lg shadow-lg transition active:scale-95">CREAR PARTIDA</button>
+              
+              <div className="flex gap-2 border-t border-slate-700 pt-4">
+                <input type="text" placeholder="CÓDIGO" id="codeInput" maxLength={4} className="w-full p-3 rounded-lg text-black bg-slate-200 uppercase font-bold text-center text-lg outline-none focus:ring-2 focus:ring-amber-500" />
+                <button onClick={() => joinRoom(document.getElementById('codeInput').value)} className="bg-blue-600 hover:bg-blue-500 font-bold px-6 rounded-lg text-white shadow-lg">ENTRAR</button>
+              </div>
+
+              <button onClick={() => setShowRules(true)} className="w-full text-slate-400 text-sm hover:text-white transition underline">Leer Reglas y Normas</button>
+            </div>
         </div>
       </div>
     );
