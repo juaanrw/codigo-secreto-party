@@ -21,14 +21,16 @@ const PARTY_CHALLENGES = [
   "🎵 Rimando: Di una palabra que rime y un número",
 ];
 
-// MODIFICADO: Ahora acepta qué equipo empieza
-export const generateBoard = (startingTeam = 'red') => {
-  const source = HUGE_WORD_LIST;
-  console.log(HUGE_WORD_LIST.length);
-  const allShuffled = shuffle([...source]);
-  const selectedWords = allShuffled.slice(0, 25);
+export const generateBoard = (startingTeam = 'red', customWords = null) => {
+  let selectedWords;
 
-  // Definir conteo según quien empieza (Quien empieza tiene 9, el otro 8)
+  if (customWords && customWords.length === 25) {
+    selectedWords = shuffle([...customWords]);
+  } else {
+    const source = HUGE_WORD_LIST;
+    const allShuffled = shuffle([...source]);
+    selectedWords = allShuffled.slice(0, 25);
+  }
   const redCount = startingTeam === 'red' ? 9 : 8;
   const blueCount = startingTeam === 'blue' ? 9 : 8;
 

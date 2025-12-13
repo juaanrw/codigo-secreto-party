@@ -296,7 +296,7 @@ const AnimatedBackground = () => {
           <BgSquare key={i} />
         ))}
       </div>
-      
+
       {/* La capa grisácea/oscura para que se lea el texto */}
       <div className="absolute inset-0 bg-slate-900/90 backdrop-blur-[2px]"></div>
     </div>
@@ -307,7 +307,7 @@ const AnimatedBackground = () => {
 const BgSquare = () => {
   // Más 'amber' para que predomine el neutral, salpicado de colores
   const colors = [
-    "bg-amber-200", "bg-amber-200", "bg-amber-200", 
+    "bg-amber-200", "bg-amber-200", "bg-amber-200",
     "bg-red-600", "bg-blue-600", "bg-gray-900"
   ];
   const [color, setColor] = useState(colors[Math.floor(Math.random() * colors.length)]);
@@ -315,7 +315,7 @@ const BgSquare = () => {
   useEffect(() => {
     // Cada cuadrado decide cuándo cambiar (entre 2 y 6 segundos)
     const intervalTime = 2000 + Math.random() * 4000;
-    
+
     const interval = setInterval(() => {
       const newColor = colors[Math.floor(Math.random() * colors.length)];
       setColor(newColor);
@@ -325,8 +325,8 @@ const BgSquare = () => {
   }, []);
 
   return (
-    <div 
-      className={`w-full h-full rounded-md transition-colors duration-[2000ms] ease-in-out ${color}`} 
+    <div
+      className={`w-full h-full rounded-md transition-colors duration-[2000ms] ease-in-out ${color}`}
     />
   );
 };
@@ -338,9 +338,9 @@ export default function App() {
   const [gameData, setGameData] = useState(null);
   const [showRules, setShowRules] = useState(false);
   const [activeInfo, setActiveInfo] = useState(null);
-  const [showDrawing, setShowDrawing] = useState(false); // Modal Pizarra
-
-  const [config, setConfig] = useState({ isParty: false, useTimer: false, hardMode: false });
+  const [showDrawing, setShowDrawing] = useState(false);
+  const [config, setConfig] = useState({ isParty: false, useTimer: false, hardMode: false, customWordsMode: false });
+  const [customWordsInput, setCustomWordsInput] = useState(Array(25).fill(''));
   const [selectedCardIndex, setSelectedCardIndex] = useState(null);
   const [areWordsVisible, setAreWordsVisible] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
@@ -377,6 +377,14 @@ export default function App() {
   }, [gameData?.turn]);
 
   const createRoom = () => {
+    if (config.customWordsMode) {
+      setView('custom_setup');
+      return;
+    }
+
+    initializeGame(null);
+  };
+  const initializeGame = (customWords) => {
     const newCode = Math.random().toString(36).substring(2, 6).toUpperCase();
     setRoomCode(newCode);
     const startTeam = Math.random() < 0.5 ? 'red' : 'blue';
@@ -384,7 +392,7 @@ export default function App() {
     const initialChallenge = config.isParty ? getRandomChallenge() : "🎯 Normal: Di una palabra y un número.";
 
     set(ref(db, `rooms/${newCode}`), {
-      board: generateBoard(startTeam),
+      board: generateBoard(startTeam, customWords),
       turn: startTeam,
       challenge: initialChallenge,
       config: { ...config },
@@ -517,38 +525,85 @@ export default function App() {
   // --- RENDER ---
   const InfoBtn = ({ id, title, desc }) => (<button onClick={(e) => { e.stopPropagation(); setActiveInfo({ title, desc }); }} className="w-6 h-6 rounded-full bg-slate-600 text-xs font-bold flex items-center justify-center hover:bg-amber-500 hover:text-black">?</button>);
 
+  if (view === 'custom_setup') {
+    const handleWordChange = (index, value) => {
+      const newWords = [...customWordsInput];
+      newWords[index] = value;
+      setCustomWordsInput(newWords);
+    };
+
+    const isFormValid = customWordsInput.every(w => w.trim().length > 0);
+
+    return (
+      <div className="min-h-screen bg-slate-900 flex flex-col items-center p-4 text-white">
+        <h2 className="text-2xl font-black text-amber-500 mb-2 uppercase">Escribe 25 Palabras</h2>
+        <p className="text-sm text-gray-400 mb-6 text-center">Rellena todas las casillas para empezar</p>
+
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-2 w-full max-w-4xl mb-20">
+          {customWordsInput.map((word, i) => (
+            <input
+              key={i}
+              type="text"
+              placeholder={`Palabra ${i + 1}`}
+              value={word}
+              onChange={(e) => handleWordChange(i, e.target.value)}
+              className="bg-slate-800 border border-slate-600 rounded p-2 text-center text-sm focus:border-amber-500 focus:outline-none"
+              maxLength={12}
+            />
+          ))}
+        </div>
+
+        <div className="fixed bottom-0 w-full bg-slate-900 p-4 border-t border-slate-800 flex gap-4 justify-center">
+          <button
+            onClick={() => setView('home')}
+            className="px-6 py-3 rounded-lg bg-slate-700 font-bold hover:bg-slate-600"
+          >
+            CANCELAR
+          </button>
+          <button
+            onClick={() => initializeGame(customWordsInput)}
+            disabled={!isFormValid}
+            className={`px-8 py-3 rounded-lg font-black text-black transition ${isFormValid ? 'bg-amber-500 hover:scale-105' : 'bg-gray-600 cursor-not-allowed'}`}
+          >
+            ¡COMENZAR PARTIDA!
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   if (view === 'home') {
     return (
       <div className="min-h-screen bg-slate-900 flex flex-col items-center justify-center text-white p-4 relative overflow-hidden">
-        
+
         <AnimatedBackground />
 
         {/* Modales */}
         {showRules && <RulesModal onClose={() => setShowRules(false)} />}
         {activeInfo && <InfoModal title={activeInfo.title} text={activeInfo.desc} onClose={() => setActiveInfo(null)} />}
 
-        {/* 2. AÑADIMOS 'relative z-10' AL CONTENIDO PARA QUE FLOTE ENCIMA */}
         <div className="relative z-10 w-full max-w-sm flex flex-col items-center">
-            
-            <h1 className="text-5xl font-black mb-6 text-amber-500 tracking-wider text-center drop-shadow-lg">CÓDIGO SECRETO</h1>
-            
-            <div className="bg-slate-800/80 backdrop-blur-md p-6 rounded-2xl w-full shadow-2xl border border-slate-700 space-y-6">
-              <div className="space-y-4 bg-slate-900/50 p-4 rounded-xl">
-                 <p className="text-xs uppercase text-gray-400 font-bold tracking-widest mb-2 border-b border-slate-700 pb-2">Configuración de Partida</p>
-                 <div className="flex items-center justify-between"><label className="flex items-center space-x-3 cursor-pointer"><input type="checkbox" checked={config.isParty} onChange={(e) => setConfig({...config, isParty: e.target.checked})} className="w-5 h-5 accent-amber-500" /><span>🎉 Modo Fiesta</span></label><InfoBtn id="party" title="Modo Fiesta" desc="Retos como Mimo o Dibujo." /></div>
-                 <div className="flex items-center justify-between"><label className="flex items-center space-x-3 cursor-pointer"><input type="checkbox" checked={config.useTimer} onChange={(e) => setConfig({...config, useTimer: e.target.checked})} className="w-5 h-5 accent-amber-500" /><span>⏱️ Temporizador</span></label><InfoBtn id="timer" title="Temporizador" desc="2 min por turno." /></div>
-                 <div className="flex items-center justify-between"><label className="flex items-center space-x-3 cursor-pointer"><input type="checkbox" checked={config.hardMode} onChange={(e) => setConfig({...config, hardMode: e.target.checked})} className="w-5 h-5 accent-amber-500" /><span>💀 Modo Difícil</span></label><InfoBtn id="hard" title="Modo Difícil" desc="Timer se pausa entre turnos. Privacidad de dispositivo." /></div>
-              </div>
 
-              <button onClick={createRoom} className="w-full bg-amber-500 hover:bg-amber-400 text-black font-black py-4 rounded-xl text-lg shadow-lg transition active:scale-95">CREAR PARTIDA</button>
-              
-              <div className="flex gap-2 border-t border-slate-700 pt-4">
-                <input type="text" placeholder="CÓDIGO" id="codeInput" maxLength={4} className="w-full p-3 rounded-lg text-black bg-slate-200 uppercase font-bold text-center text-lg outline-none focus:ring-2 focus:ring-amber-500" />
-                <button onClick={() => joinRoom(document.getElementById('codeInput').value)} className="bg-blue-600 hover:bg-blue-500 font-bold px-6 rounded-lg text-white shadow-lg">ENTRAR</button>
-              </div>
+          <h1 className="text-5xl font-black mb-6 text-amber-500 tracking-wider text-center drop-shadow-lg">CÓDIGO SECRETO</h1>
 
-              <button onClick={() => setShowRules(true)} className="w-full text-slate-400 text-sm hover:text-white transition underline">Leer Reglas y Normas</button>
+          <div className="bg-slate-800/80 backdrop-blur-md p-6 rounded-2xl w-full shadow-2xl border border-slate-700 space-y-6">
+            <div className="space-y-4 bg-slate-900/50 p-4 rounded-xl">
+              <p className="text-xs uppercase text-gray-400 font-bold tracking-widest mb-2 border-b border-slate-700 pb-2">Configuración de Partida</p>
+              <div className="flex items-center justify-between"><label className="flex items-center space-x-3 cursor-pointer"><input type="checkbox" checked={config.isParty} onChange={(e) => setConfig({ ...config, isParty: e.target.checked })} className="w-5 h-5 accent-amber-500" /><span>🎉 Modo Fiesta</span></label><InfoBtn id="party" title="Modo Fiesta" desc="Retos como Mimo o Dibujo." /></div>
+              <div className="flex items-center justify-between"><label className="flex items-center space-x-3 cursor-pointer"><input type="checkbox" checked={config.useTimer} onChange={(e) => setConfig({ ...config, useTimer: e.target.checked })} className="w-5 h-5 accent-amber-500" /><span>⏱️ Temporizador</span></label><InfoBtn id="timer" title="Temporizador" desc="2 min por turno." /></div>
+              <div className="flex items-center justify-between"><label className="flex items-center space-x-3 cursor-pointer"><input type="checkbox" checked={config.hardMode} onChange={(e) => setConfig({ ...config, hardMode: e.target.checked })} className="w-5 h-5 accent-amber-500" /><span>💀 Modo Difícil</span></label><InfoBtn id="hard" title="Modo Difícil" desc="Timer se pausa entre turnos. Privacidad de dispositivo." /></div>
+              <div className="flex items-center justify-between"><label className="flex items-center space-x-3 cursor-pointer"><input type="checkbox" checked={config.customWordsMode} onChange={(e) => setConfig({ ...config, customWordsMode: e.target.checked })} className="w-5 h-5 accent-amber-500" /><span>✍️ Palabras Propias</span></label><InfoBtn id="custom" title="Palabras Personalizadas" desc="Escribe tú mismo las 25 palabras de la partida." /></div>
             </div>
+
+            <button onClick={createRoom} className="w-full bg-amber-500 hover:bg-amber-400 text-black font-black py-4 rounded-xl text-lg shadow-lg transition active:scale-95">CREAR PARTIDA</button>
+
+            <div className="flex gap-2 border-t border-slate-700 pt-4">
+              <input type="text" placeholder="CÓDIGO" id="codeInput" maxLength={4} className="w-full p-3 rounded-lg text-black bg-slate-200 uppercase font-bold text-center text-lg outline-none focus:ring-2 focus:ring-amber-500" />
+              <button onClick={() => joinRoom(document.getElementById('codeInput').value)} className="bg-blue-600 hover:bg-blue-500 font-bold px-6 rounded-lg text-white shadow-lg">ENTRAR</button>
+            </div>
+
+            <button onClick={() => setShowRules(true)} className="w-full text-slate-400 text-sm hover:text-white transition underline">Leer Reglas y Normas</button>
+          </div>
         </div>
       </div>
     );
