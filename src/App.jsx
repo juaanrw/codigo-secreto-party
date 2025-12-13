@@ -617,7 +617,7 @@ export default function App() {
 
 
             <div className="flex gap-4 w-full md:w-auto">
-              <button onClick={goHome} className="flex-1 md:flex-none bg-slate-700 hover:bg-slate-600 text-white font-bold py-3 px-6 rounded-xl transition">
+              <button onClick={goHomeFinal} className="flex-1 md:flex-none bg-slate-700 hover:bg-slate-600 text-white font-bold py-3 px-6 rounded-xl transition">
                 🏠 SALIR
               </button>
               <button onClick={newGame} className="flex-1 md:flex-none bg-white hover:scale-105 text-black font-black py-3 px-8 rounded-xl shadow-lg transition animate-pulse">
