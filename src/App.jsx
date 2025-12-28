@@ -22,7 +22,7 @@ const Card = ({ data, viewMode, onClick, isSelected, isProposed }) => {
   else if (viewMode === 'captain_blue') displayType = (isRevealed || data.type === 'blue') ? data.type : 'unknown';
 
   let baseClass = `w-full h-20 md:h-28 lg:h-32 rounded-lg flex items-center justify-center font-bold text-sm md:text-xl select-none transition-all shadow-md p-1 text-center break-words leading-tight border-b-4 active:border-b-0 active:translate-y-1 relative`;
-  
+
   const selectionClass = isSelected ? "ring-4 ring-yellow-400 scale-105 z-20" : "";
   const revealedClass = isRevealed ? "opacity-90 ring-4 ring-black/30 border-b-0 translate-y-1 saturate-150" : "cursor-pointer hover:scale-105";
   const proposalClass = (isProposed && !isRevealed) ? "ring-4 ring-white ring-dashed animate-pulse z-10" : "";
@@ -35,6 +35,13 @@ const Card = ({ data, viewMode, onClick, isSelected, isProposed }) => {
       {(isProposed && !isRevealed) && <span className="absolute -top-3 -right-2 text-2xl drop-shadow-lg filter animate-bounce">👆</span>}
     </div>
   );
+};
+
+// --- SISTEMA DE SONIDO ---
+const playSound = (type) => {
+  const audio = new Audio(`/sounds/${type}.mp3`);
+  audio.volume = 0.5;
+  audio.play().catch(e => console.log("Audio play failed", e));
 };
 
 // --- PIZARRA ---
@@ -130,9 +137,9 @@ const DrawingBoard = ({ isOpen, onClose, isCaptain, roomCode, existingImage }) =
           )}
         </div>
         {isCaptain ? (
-          !sessionFinished && !canDraw ? <button onClick={startDrawingSession} className="w-full bg-amber-500 text-black font-bold py-3 rounded-lg hover:scale-105 transition">✏️ EMPEZAR DIBUJO (10s)</button> : 
-          canDraw ? <div className="w-full bg-gray-200 rounded-full h-6 overflow-hidden border border-gray-400 relative"><div className="bg-red-500 h-full transition-all duration-1000 ease-linear" style={{ width: `${(timeLeft / 10) * 100}%` }}></div><div className="absolute inset-x-0 text-center text-xs font-bold text-black leading-6 z-10">TIEMPO: {timeLeft}s</div></div> :
-          <div className="text-center text-sm font-bold text-gray-500 bg-gray-200 p-2 rounded">DIBUJO FINALIZADO</div>
+          !sessionFinished && !canDraw ? <button onClick={startDrawingSession} className="w-full bg-slate-200 text-black font-bold py-3 rounded-lg hover:scale-105 transition">✏️ EMPEZAR DIBUJO (10s)</button> :
+            canDraw ? <div className="w-full bg-gray-200 rounded-full h-6 overflow-hidden border border-gray-400 relative"><div className="bg-red-500 h-full transition-all duration-1000 ease-linear" style={{ width: `${(timeLeft / 10) * 100}%` }}></div><div className="absolute inset-x-0 text-center text-xs font-bold text-black leading-6 z-10">TIEMPO: {timeLeft}s</div></div> :
+              <div className="text-center text-sm font-bold text-gray-500 bg-gray-200 p-2 rounded">DIBUJO FINALIZADO</div>
         ) : <p className="text-center text-sm text-gray-500">Solo el capitán actual puede dibujar.</p>}
       </div>
     </div>
@@ -171,34 +178,34 @@ const RulesModal = ({ onClose }) => (
   <div className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4 animate-fadeIn" onClick={onClose}>
     <div className="bg-slate-800 text-white p-6 rounded-xl max-w-md w-full shadow-2xl border border-slate-600 overflow-y-auto max-h-[90vh]" onClick={e => e.stopPropagation()}>
       <h2 className="text-3xl font-black text-amber-400 mb-6 text-center border-b border-slate-600 pb-4">📜 REGLAS DEL JUEGO</h2>
-      
+
       <div className="space-y-5 text-sm text-gray-300 leading-relaxed">
-        
+
         <div>
           <h3 className="text-white font-bold text-lg mb-1">1. Preparación y Equipos</h3>
           <p>Dividid el grupo en dos: <strong className="text-red-400">Equipo Rojo</strong> y <strong className="text-blue-400">Equipo Azul</strong>. Elegid un Capitán por equipo. El juego elegirá al azar quién empieza.</p>
           <div className="mt-2 bg-slate-700/50 p-2 rounded border-l-4 border-amber-500">
-             <p className="text-xs text-gray-300">💡 <strong>¿Por qué un equipo tiene una palabra más?</strong><br/>El equipo que empieza tiene ventaja de iniciativa, por lo que para equilibrarlo debe adivinar <strong>9 palabras</strong>, mientras que el segundo equipo solo <strong>8</strong>.</p>
+            <p className="text-xs text-gray-300">💡 <strong>¿Por qué un equipo tiene una palabra más?</strong><br />El equipo que empieza tiene ventaja de iniciativa, por lo que para equilibrarlo debe adivinar <strong>9 palabras</strong>, mientras que el segundo equipo solo <strong>8</strong>.</p>
           </div>
         </div>
 
         <div>
-           <h3 className="text-white font-bold text-lg mb-1">2. Significado de las Cartas</h3>
-           <ul className="space-y-2 mt-2">
-             <li className="flex items-center gap-2"><div className="w-4 h-4 bg-red-500 rounded shadow"></div> <span><strong>Agente Rojo:</strong> Punto para el equipo Rojo.</span></li>
-             <li className="flex items-center gap-2"><div className="w-4 h-4 bg-blue-500 rounded shadow"></div> <span><strong>Agente Azul:</strong> Punto para el equipo Azul.</span></li>
-             <li className="flex items-center gap-2"><div className="w-4 h-4 bg-amber-200 rounded shadow"></div> <span><strong>Civil Inocente:</strong> Gente normal. Si lo tocas, tu turno <strong>termina inmediatamente</strong>.</span></li>
-             <li className="flex items-center gap-2"><div className="w-4 h-4 bg-gray-900 border border-white rounded shadow"></div> <span className="text-red-400 font-bold">¡EL ASESINO! Si lo tocas, PIERDES LA PARTIDA al instante.</span></li>
-           </ul>
+          <h3 className="text-white font-bold text-lg mb-1">2. Significado de las Cartas</h3>
+          <ul className="space-y-2 mt-2">
+            <li className="flex items-center gap-2"><div className="w-4 h-4 bg-red-500 rounded shadow"></div> <span><strong>Agente Rojo:</strong> Punto para el equipo Rojo.</span></li>
+            <li className="flex items-center gap-2"><div className="w-4 h-4 bg-blue-500 rounded shadow"></div> <span><strong>Agente Azul:</strong> Punto para el equipo Azul.</span></li>
+            <li className="flex items-center gap-2"><div className="w-4 h-4 bg-amber-200 rounded shadow"></div> <span><strong>Civil Inocente:</strong> Gente normal. Si lo tocas, tu turno <strong>termina inmediatamente</strong>.</span></li>
+            <li className="flex items-center gap-2"><div className="w-4 h-4 bg-gray-900 border border-white rounded shadow"></div> <span className="text-red-400 font-bold">¡EL ASESINO! Si lo tocas, PIERDES LA PARTIDA al instante.</span></li>
+          </ul>
         </div>
 
         <div>
           <h3 className="text-white font-bold text-lg mb-1">3. Dinámica del Turno</h3>
           <p>El Capitán da una pista: <strong>PALABRA + NÚMERO</strong> (Ej: <em>"Volar, 2"</em>). O hace un <strong>DIBUJO</strong> si ese modo está activo.</p>
           <ul className="list-disc pl-5 mt-1 space-y-1">
-             <li><strong>Si aciertas:</strong> Puedes seguir adivinando.</li>
-             <li><strong>Si fallas (Civil o Equipo contrario):</strong> Tu turno termina. <br/><span className="text-xs text-gray-400">(Nota: Si revelas una carta del rival, ¡le regalas el punto!)</span></li>
-             <li><strong>¿Cuántas puedo tocar?</strong> Puedes intentar adivinar el número que dijo el capitán <strong>más una extra</strong> (por si te quedó una pendiente de turnos anteriores). Puedes plantarte cuando quieras.</li> 
+            <li><strong>Si aciertas:</strong> Puedes seguir adivinando.</li>
+            <li><strong>Si fallas (Civil o Equipo contrario):</strong> Tu turno termina. <br /><span className="text-xs text-gray-400">(Nota: Si revelas una carta del rival, ¡le regalas el punto!)</span></li>
+            <li><strong>¿Cuántas puedo tocar?</strong> Puedes intentar adivinar el número que dijo el capitán <strong>más una extra</strong> (por si te quedó una pendiente de turnos anteriores). Puedes plantarte cuando quieras.</li>
           </ul>
         </div>
 
@@ -212,7 +219,7 @@ const RulesModal = ({ onClose }) => (
         </div>
       </div>
 
-      <button onClick={onClose} className="w-full mt-6 bg-amber-500 hover:bg-amber-600 text-black font-bold py-4 rounded-lg transition shadow-lg">
+      <button onClick={onClose} className="w-full mt-6 bg-slate-200 hover:bg-amber-600 text-black font-bold py-4 rounded-lg transition shadow-lg">
         ¡ENTENDIDO!
       </button>
     </div>
@@ -239,23 +246,24 @@ export default function App() {
   const [view, setView] = useState('home');
   const [roomCode, setRoomCode] = useState('');
   const [gameData, setGameData] = useState(null);
-  
+
   // Modales y Ayuda
   const [showRules, setShowRules] = useState(false);
   const [activeInfo, setActiveInfo] = useState(null); // ESTADO PARA EL MODAL DE INFO
   const [showDrawing, setShowDrawing] = useState(false);
-  
+
   const [config, setConfig] = useState({ isParty: false, useTimer: false, hardMode: false, customWordsMode: false });
   const [customWordsInput, setCustomWordsInput] = useState(Array(25).fill(''));
   const [selectedCardIndex, setSelectedCardIndex] = useState(null);
   const [areWordsVisible, setAreWordsVisible] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
+  const lastSoundTimestamp = useRef(0);
 
   // --- COMPONENTE INTERNO DEL BOTÓN INFO ---
   const InfoBtn = ({ title, desc }) => (
-    <button 
-      onClick={(e) => { e.stopPropagation(); setActiveInfo({ title, desc }); }} 
-      className="w-6 h-6 rounded-full bg-slate-600 text-xs font-bold flex items-center justify-center hover:bg-amber-500 hover:text-black transition"
+    <button
+      onClick={(e) => { e.stopPropagation(); setActiveInfo({ title, desc }); }}
+      className="w-6 h-6 rounded-full bg-slate-600 text-xs font-bold flex items-center justify-center hover:bg-slate-200 hover:text-black transition"
     >
       ?
     </button>
@@ -287,22 +295,35 @@ export default function App() {
     if (roomParam) setRoomCode(roomParam.toUpperCase());
   }, []);
 
-  // --- FIREBASE SYNC ---
+// --- SYNC FIREBASE ---
   useEffect(() => {
     if (roomCode) {
       const unsubscribe = onValue(ref(db, `rooms/${roomCode}`), (snapshot) => {
         const data = snapshot.val();
         if (data) {
           if (data.status === 'closed') { exitToHome(); return; }
-          if (data.status === 'reset' || view === 'loading_room' || view === 'home') setView('role_selection');
+          
+          if (data.status === 'reset') {
+             if (view !== 'role_selection') setView('role_selection');
+          } else if (view === 'loading_room' || view === 'home') {
+             setView('role_selection');
+          }
+
           setGameData(data);
-          if (data.proposedCard !== undefined && data.proposedCard !== null) setSelectedCardIndex(data.proposedCard);
-          else setSelectedCardIndex(null);
+          
+          if (data.proposedCard !== undefined && data.proposedCard !== null) {
+              setSelectedCardIndex(data.proposedCard);
+          }
+
+          if (data.lastSound && data.lastSound.timestamp > lastSoundTimestamp.current) {
+              playSound(data.lastSound.type);
+              lastSoundTimestamp.current = data.lastSound.timestamp;
+          }
         }
       });
       return () => unsubscribe();
     }
-  }, [roomCode, view]);
+  }, [roomCode, view]); 
 
   useEffect(() => {
     if (gameData?.turn) setAreWordsVisible(false);
@@ -340,7 +361,7 @@ export default function App() {
   };
   const copyLink = async () => {
     const url = `${window.location.origin}${window.location.pathname}?room=${roomCode}`;
-    
+
     try {
       await navigator.clipboard.writeText(url);
       setLinkCopied(true);
@@ -348,28 +369,28 @@ export default function App() {
       try {
         const textArea = document.createElement("textarea");
         textArea.value = url;
-        
+
         textArea.style.position = "fixed";
         textArea.style.left = "-9999px";
         textArea.style.top = "0";
-        
+
         document.body.appendChild(textArea);
         textArea.focus();
         textArea.select();
-        
+
         const successful = document.execCommand('copy');
         document.body.removeChild(textArea);
-        
+
         if (successful) {
-           setLinkCopied(true);
+          setLinkCopied(true);
         } else {
-           alert("Copia este enlace manualmente: " + url);
+          alert("Copia este enlace manualmente: " + url);
         }
       } catch (e) {
         alert("Copia este enlace manualmente: " + url);
       }
     }
-    
+
     setTimeout(() => setLinkCopied(false), 2000);
   };
   const goHome = () => { if (confirm("¿Salir?")) exitToHome(); };
@@ -379,14 +400,14 @@ export default function App() {
     }
   };
   const handleRoleSelection = (role) => setView(role === 'table' ? 'table' : 'captain');
-  
+
   const handleCardClick = (index) => {
     if (gameData.winner || gameData.board[index].revealed) return;
     if (view === 'table') {
-        const newProposal = gameData.proposedCard === index ? null : index;
-        update(ref(db, `rooms/${roomCode}`), { proposedCard: newProposal });
+      const newProposal = gameData.proposedCard === index ? null : index;
+      update(ref(db, `rooms/${roomCode}`), { proposedCard: newProposal });
     } else {
-        setSelectedCardIndex(index === selectedCardIndex ? null : index);
+      setSelectedCardIndex(index === selectedCardIndex ? null : index);
     }
   };
   const activateHardModeTurn = () => {
@@ -398,20 +419,40 @@ export default function App() {
     const index = selectedCardIndex;
     const currentBoard = [...gameData.board];
     const card = currentBoard[index];
+
     let newWinner = null;
-    if (card.type === 'bomb') newWinner = gameData.turn === 'red' ? 'blue' : 'red';
-    else {
-      const tempBoard = currentBoard.map((c, i) => i === index ? { ...c, revealed: true } : c);
-      const redLeft = tempBoard.filter(c => c.type === 'red' && !c.revealed).length;
-      const blueLeft = tempBoard.filter(c => c.type === 'blue' && !c.revealed).length;
-      if (redLeft === 0) newWinner = 'red';
-      if (blueLeft === 0) newWinner = 'blue';
+    let soundType = 'fallo'; // Por defecto
+
+    if (card.type === 'bomb') {
+        newWinner = gameData.turn === 'red' ? 'blue' : 'red';
+        soundType = 'fallo'; // Bomba suena a fallo grave
+    } else {
+        // Chequeo de acierto
+        if (card.type === gameData.turn) {
+            soundType = 'acierto';
+        } else {
+            soundType = 'fallo';
+        }
+
+        const tempBoard = currentBoard.map((c, i) => i === index ? { ...c, revealed: true } : c);
+        const redLeft = tempBoard.filter(c => c.type === 'red' && !c.revealed).length;
+        const blueLeft = tempBoard.filter(c => c.type === 'blue' && !c.revealed).length;
+        if (redLeft === 0) newWinner = 'red';
+        if (blueLeft === 0) newWinner = 'blue';
     }
+
     const updates = {};
     updates[`rooms/${roomCode}/board/${index}/revealed`] = true;
     updates[`rooms/${roomCode}/proposedCard`] = null;
-    if (newWinner) updates[`rooms/${roomCode}/winner`] = newWinner;
-    else if (card.type !== gameData.turn) {
+    
+    // ENVIAR SONIDO A TODOS
+    updates[`rooms/${roomCode}/lastSound`] = { type: soundType, timestamp: Date.now() };
+
+    if (newWinner) {
+        updates[`rooms/${roomCode}/winner`] = newWinner;
+        // Si hay ganador, sobrescribimos con sonido de victoria
+        updates[`rooms/${roomCode}/lastSound`] = { type: 'victoria', timestamp: Date.now() };
+    } else if (card.type !== gameData.turn) {
       const nextTurn = gameData.turn === 'red' ? 'blue' : 'red';
       updates[`rooms/${roomCode}/turn`] = nextTurn;
       if (gameData.config.hardMode) updates[`rooms/${roomCode}/paused`] = true;
@@ -451,7 +492,7 @@ export default function App() {
         </div>
         <div className="fixed bottom-0 w-full bg-slate-900 p-4 border-t border-slate-800 flex gap-4 justify-center">
           <button onClick={() => setView('home')} className="px-6 py-3 rounded-lg bg-slate-700 font-bold">CANCELAR</button>
-          <button onClick={() => initializeGame(customWordsInput)} disabled={!customWordsInput.every(w=>w.trim().length>0)} className="px-8 py-3 rounded-lg font-black text-black bg-amber-500 disabled:bg-gray-600">¡CREAR!</button>
+          <button onClick={() => initializeGame(customWordsInput)} disabled={!customWordsInput.every(w => w.trim().length > 0)} className="px-8 py-3 rounded-lg font-black text-black bg-slate-200 disabled:bg-gray-600">¡CREAR!</button>
         </div>
       </div>
     );
@@ -466,11 +507,13 @@ export default function App() {
         {activeInfo && <InfoModal title={activeInfo.title} text={activeInfo.desc} onClose={() => setActiveInfo(null)} />}
 
         <div className="relative z-10 w-full max-w-sm flex flex-col items-center">
-          <h1 className="text-5xl font-black mb-6 text-amber-500 tracking-wider text-center drop-shadow-lg">CÓDIGO SECRETO</h1>
+          <h1 className="text-5xl font-black mb-6 tracking-wider text-center drop-shadow-lg">
+            <span className="text-red-500">CÓDIGO</span> <span className="text-blue-500">SECRETO</span>
+          </h1>
           <div className="bg-slate-800/80 backdrop-blur-md p-6 rounded-2xl w-full shadow-2xl border border-slate-700 space-y-6">
             <div className="space-y-4 bg-slate-900/50 p-4 rounded-xl">
               <p className="text-xs uppercase text-gray-400 font-bold tracking-widest mb-2 border-b border-slate-700 pb-2">Configuración de Partida</p>
-              
+
               <div className="flex items-center justify-between">
                 <label className="flex items-center space-x-3 cursor-pointer"><input type="checkbox" checked={config.isParty} onChange={(e) => setConfig({ ...config, isParty: e.target.checked })} className="w-5 h-5 accent-amber-500" /><span>🎨 Modo Dibujo</span></label>
                 <InfoBtn title="Modo Dibujo (Pictionary)" desc="El capitán NO puede hablar. Todas las pistas se darán dibujando en la pizarra interactiva." />
@@ -491,7 +534,7 @@ export default function App() {
                 <InfoBtn title="Palabras Personalizadas" desc="Permite escribir manualmente las 25 palabras antes de empezar la partida." />
               </div>
             </div>
-            <button onClick={createRoom} className="w-full bg-amber-500 hover:bg-amber-400 text-black font-black py-4 rounded-xl text-lg shadow-lg active:scale-95">CREAR PARTIDA</button>
+            <button onClick={createRoom} className="w-full bg-slate-200 hover:bg-amber-400 text-black font-black py-4 rounded-xl text-lg shadow-lg active:scale-95">CREAR PARTIDA</button>
             <div className="flex gap-2 border-t border-slate-700 pt-4"><input type="text" placeholder="CÓDIGO" id="codeInput" maxLength={4} className="w-full p-3 rounded-lg text-black bg-slate-200 uppercase font-bold text-center text-lg" /><button onClick={() => joinRoom(document.getElementById('codeInput').value)} className="bg-blue-600 hover:bg-blue-500 font-bold px-6 rounded-lg text-white">ENTRAR</button></div>
             <button onClick={() => setShowRules(true)} className="w-full text-slate-400 text-sm hover:text-white transition underline">Leer Reglas</button>
           </div>
@@ -536,7 +579,7 @@ export default function App() {
         </div>
         {(isDrawingChallenge || gameData.drawing) && <button onClick={() => setShowDrawing(true)} className="bg-white text-black p-2 rounded-full shadow-lg animate-bounce-slow font-bold text-xl" title="Abrir Pizarra">🎨</button>}
         <div className="flex items-center gap-3 bg-black/40 px-3 py-1 rounded-full border border-white/10"><div className={`text-2xl font-black ${isRedTurn ? 'scale-110' : 'opacity-60'} text-red-500`}>{redLeft}</div><div className="h-5 w-px bg-gray-500"></div><div className={`text-2xl font-black ${!isRedTurn ? 'scale-110' : 'opacity-60'} text-blue-500`}>{blueLeft}</div></div>
-        <div>{gameData.config.useTimer ? <Timer turnTimestamp={gameData.turnTimestamp} turnDuration={120} isPaused={gameData.paused} /> : <span className={`font-bold px-2 py-1 rounded text-sm ${isRedTurn ? 'bg-red-600' : 'bg-blue-600'}`}>{isRedTurn ? 'ROJO' : 'AZUL'}</span>}</div>
+        <div>{gameData.config.useTimer ? <Timer turnTimestamp={gameData.turnTimestamp} turnDuration={120} isPaused={gameData.paused} /> : <span className={`font-bold px-2 py-1 rounded text-sm ${isRedTurn ? 'bg-red-600' : 'bg-blue-600'}`}>{isRedTurn ? ' TURNO DEL ROJO' : 'TURNO DEL AZUL'}</span>}</div>
       </div>
 
       <div className="flex-1 p-2 md:p-6 w-full max-w-5xl mx-auto relative">
@@ -547,7 +590,7 @@ export default function App() {
           </div>
         )}
         {gameData.config.isParty && (
-          <div className="bg-amber-500 text-black p-3 text-center font-bold rounded-lg shadow-lg mb-4 mx-auto max-w-md flex flex-col"><span className="text-sm uppercase opacity-70">RETO:</span><span className="text-lg">{gameData.challenge}</span>{isDrawingChallenge && <span className="text-xs mt-1 bg-black/10 rounded px-2">Pulsa 🎨 arriba para dibujar</span>}</div>
+          <div className="bg-slate-200 text-black p-3 text-center font-bold rounded-lg shadow-lg mb-4 mx-auto max-w-md flex flex-col"><span className="text-sm uppercase opacity-70">RETO:</span><span className="text-lg">{gameData.challenge}</span>{isDrawingChallenge && <span className="text-xs mt-1 bg-black/10 rounded px-2">Pulsa 🎨 arriba para dibujar</span>}</div>
         )}
         <div className="grid grid-cols-5 gap-2 md:gap-4 content-start">
           {gameData.board.map((card, i) => (
@@ -563,7 +606,7 @@ export default function App() {
           )}
           <div className="flex gap-3">
             <button onClick={passTurn} className="flex-1 bg-slate-700 hover:bg-slate-600 text-white font-bold py-3 rounded-xl border border-slate-500 shadow-lg">PASAR TURNO</button>
-            {gameData.winner && <button onClick={newGame} className="flex-1 bg-amber-500 text-black font-bold py-3 rounded-xl animate-pulse shadow-lg">NUEVA PARTIDA</button>}
+            {gameData.winner && <button onClick={newGame} className="flex-1 bg-slate-200 text-black font-bold py-3 rounded-xl animate-pulse shadow-lg">NUEVA PARTIDA</button>}
           </div>
         </div>
       )}
