@@ -1,7 +1,28 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { db } from './firebase';
-import { ref, set, onValue, update } from "firebase/database";
+import { ref, set, onValue, update, get, remove } from "firebase/database";
 import { generateBoard } from './utils';
+
+// --- LIMPIEZA DE SALAS VIEJAS (>24H) ---
+const cleanupOldRooms = async () => {
+  try {
+    const roomsRef = ref(db, 'rooms');
+    const snapshot = await get(roomsRef);
+    if (snapshot.exists()) {
+      const rooms = snapshot.val();
+      const now = Date.now();
+      const ONE_DAY = 24 * 60 * 60 * 1000;
+
+      for (const [key, room] of Object.entries(rooms)) {
+        if (room.turnTimestamp && (now - room.turnTimestamp > ONE_DAY)) {
+          remove(ref(db, `rooms/${key}`));
+        }
+      }
+    }
+  } catch (error) {
+    console.error("Error limpiando salas:", error);
+  }
+};
 
 // --- COMPONENTE CARTA ---
 const Card = ({ data, viewMode, onClick, isSelected, isProposed }) => {
@@ -343,7 +364,12 @@ export default function App() {
     initializeGame(null);
   };
   const initializeGame = (customWords) => {
-    const newCode = Math.random().toString(36).substring(2, 6).toUpperCase();
+    cleanupOldRooms();
+    const chars = "ABCDEFGHIJKLMNPQRSTUVWXYZ";
+    let newCode = "";
+    for (let i = 0; i < 4; i++) {
+      newCode += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
     setRoomCode(newCode); updateUrl(newCode);
     const startTeam = Math.random() < 0.5 ? 'red' : 'blue';
     const initialChallenge = config.isParty ? "🎨 Dibujo: ¡Haz un dibujo en la pizarra!" : "🎯 Normal: Di una palabra y un número.";
