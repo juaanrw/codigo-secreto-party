@@ -332,8 +332,17 @@ export default function App() {
 
           setGameData(data);
           
-          if (data.proposedCard !== undefined && data.proposedCard !== null) {
-              setSelectedCardIndex(data.proposedCard);
+          const prop = data.proposedCard;
+          if (prop !== undefined && prop !== null && prop !== -1) {
+              setSelectedCardIndex(prop);
+          } else {
+              if (prop === -1) {
+                  setSelectedCardIndex(null);
+              }
+              
+              if (selectedCardIndex !== null && data.board[selectedCardIndex] && data.board[selectedCardIndex].revealed) {
+                  setSelectedCardIndex(null);
+              }
           }
 
           if (data.lastSound && data.lastSound.timestamp > lastSoundTimestamp.current) {
@@ -344,7 +353,7 @@ export default function App() {
       });
       return () => unsubscribe();
     }
-  }, [roomCode, view]); 
+  }, [roomCode, view, selectedCardIndex]); 
 
   useEffect(() => {
     if (gameData?.turn) setAreWordsVisible(false);
@@ -430,7 +439,7 @@ export default function App() {
   const handleCardClick = (index) => {
     if (gameData.winner || gameData.board[index].revealed) return;
     if (view === 'table') {
-      const newProposal = gameData.proposedCard === index ? null : index;
+      const newProposal = gameData.proposedCard === index ? -1 : index;
       update(ref(db, `rooms/${roomCode}`), { proposedCard: newProposal });
     } else {
       setSelectedCardIndex(index === selectedCardIndex ? null : index);
@@ -469,7 +478,7 @@ export default function App() {
 
     const updates = {};
     updates[`rooms/${roomCode}/board/${index}/revealed`] = true;
-    updates[`rooms/${roomCode}/proposedCard`] = null;
+    updates[`rooms/${roomCode}/proposedCard`] = -1;
     
     // ENVIAR SONIDO A TODOS
     updates[`rooms/${roomCode}/lastSound`] = { type: soundType, timestamp: Date.now() };
@@ -490,7 +499,7 @@ export default function App() {
   };
   const passTurn = () => {
     const nextTurn = gameData.turn === 'red' ? 'blue' : 'red';
-    const updates = { turn: nextTurn, proposedCard: null };
+    const updates = { turn: nextTurn, proposedCard: -1 };
     if (gameData.config.hardMode) updates.paused = true;
     else updates.turnTimestamp = Date.now();
     if (gameData.config.isParty) updates.drawing = null;
@@ -627,12 +636,14 @@ export default function App() {
 
       {isCaptain && (
         <div className="fixed bottom-0 w-full p-4 bg-gradient-to-t from-black via-black/95 to-transparent flex flex-col gap-2 z-40">
-          {selectedCardIndex !== null && !gameData.winner && (
-            <button onClick={confirmReveal} className="w-full bg-yellow-400 hover:bg-yellow-300 text-black font-black py-3 rounded-xl shadow-lg active:scale-95 text-lg animate-bounce-short">👆 REVELAR "{gameData.board[selectedCardIndex].word}"</button>
+          {selectedCardIndex !== null && gameData.board[selectedCardIndex] && !gameData.winner && (
+            <button onClick={confirmReveal} className="w-full bg-yellow-400 hover:bg-yellow-300 text-black font-black py-3 rounded-xl shadow-lg active:scale-95 text-lg animate-bounce-short">
+              👆 REVELAR "{gameData.board[selectedCardIndex].word}"
+            </button>
           )}
           <div className="flex gap-3">
             <button onClick={passTurn} className="flex-1 bg-slate-700 hover:bg-slate-600 text-white font-bold py-3 rounded-xl border border-slate-500 shadow-lg">PASAR TURNO</button>
-            {gameData.winner && <button onClick={newGame} className="flex-1 bg-slate-200 text-black font-bold py-3 rounded-xl animate-pulse shadow-lg">NUEVA PARTIDA</button>}
+            {gameData.winner && <button onClick={newGame} className="flex-1 bg-amber-500 text-black font-bold py-3 rounded-xl animate-pulse shadow-lg">NUEVA PARTIDA</button>}
           </div>
         </div>
       )}
