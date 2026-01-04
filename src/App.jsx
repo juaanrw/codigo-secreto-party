@@ -364,6 +364,7 @@ export default function App() {
     initializeGame(null);
   };
   const initializeGame = (customWords) => {
+    cleanupOldRooms();
     const chars = "ABCDEFGHIJKLMNPQRSTUVWXYZ";
     let newCode = "";
     for (let i = 0; i < 4; i++) {
