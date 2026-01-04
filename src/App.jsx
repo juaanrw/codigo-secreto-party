@@ -1,7 +1,28 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { db } from './firebase';
-import { ref, set, onValue, update } from "firebase/database";
+import { ref, set, onValue, update, get, remove } from "firebase/database";
 import { generateBoard } from './utils';
+
+// --- LIMPIEZA DE SALAS VIEJAS (>24H) ---
+const cleanupOldRooms = async () => {
+  try {
+    const roomsRef = ref(db, 'rooms');
+    const snapshot = await get(roomsRef);
+    if (snapshot.exists()) {
+      const rooms = snapshot.val();
+      const now = Date.now();
+      const ONE_DAY = 24 * 60 * 60 * 1000;
+
+      for (const [key, room] of Object.entries(rooms)) {
+        if (room.turnTimestamp && (now - room.turnTimestamp > ONE_DAY)) {
+          remove(ref(db, `rooms/${key}`));
+        }
+      }
+    }
+  } catch (error) {
+    console.error("Error limpiando salas:", error);
+  }
+};
 
 // --- COMPONENTE CARTA ---
 const Card = ({ data, viewMode, onClick, isSelected, isProposed }) => {
