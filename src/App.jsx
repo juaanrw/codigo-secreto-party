@@ -25,7 +25,7 @@ const cleanupOldRooms = async () => {
 };
 
 // --- COMPONENTE CARTA ---
-const Card = ({ data, viewMode, onClick, isSelected, isProposed }) => {
+export const Card = ({ data, viewMode, onClick, isSelected, isProposed }) => {
   const colors = {
     red: "bg-red-600 text-white border-red-800",
     blue: "bg-blue-600 text-white border-blue-800",
