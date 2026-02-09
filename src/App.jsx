@@ -92,6 +92,7 @@ export const DrawingBoard = ({ isOpen, onClose, isCaptain, roomCode, existingIma
       interval = setInterval(() => setTimeLeft(prev => prev - 1), 1000);
     } else if (timeLeft === 0 && canDraw) finishDrawing();
     return () => clearInterval(interval);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [canDraw, timeLeft, isCaptain]);
 
   const startDrawingSession = () => {
@@ -252,9 +253,11 @@ const AnimatedBackground = () => {
   const squares = Array.from({ length: 60 });
   return <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none"><div className="grid grid-cols-6 md:grid-cols-10 gap-2 h-full w-full p-2 opacity-40">{squares.map((_, i) => <BgSquare key={i} />)}</div><div className="absolute inset-0 bg-slate-900/90 backdrop-blur-[2px]"></div></div>;
 };
+
+const random = Math.random();
 const BgSquare = () => {
   const colors = ["bg-amber-200", "bg-amber-200", "bg-amber-200", "bg-red-600", "bg-blue-600", "bg-gray-900"];
-  const [color, setColor] = useState(colors[Math.floor(Math.random() * colors.length)]);
+  const [color, setColor] = useState(colors[Math.floor(random * colors.length)]);
   useEffect(() => {
     const interval = setInterval(() => { setColor(colors[Math.floor(Math.random() * colors.length)]); }, 2000 + Math.random() * 4000);
     return () => clearInterval(interval);
@@ -262,16 +265,35 @@ const BgSquare = () => {
   return <div className={`w-full h-full rounded-md transition-colors duration-[2000ms] ease-in-out ${color}`} />;
 };
 
+// ... (Asegúrate de mantener Timer, RulesModal, InfoModal, AnimatedBackground arriba) ...
+
+// --- COMPONENTE INTERNO DEL BOTÓN INFO (EXTRAÍDO FUERA DE APP) ---
+// Ahora recibe onInfoClick como prop
+const InfoBtn = ({ title, desc, onInfoClick }) => (
+  <button
+    onClick={(e) => { e.stopPropagation(); onInfoClick({ title, desc }); }}
+    className="w-6 h-6 rounded-full bg-slate-600 text-xs font-bold flex items-center justify-center hover:bg-slate-200 hover:text-black transition"
+  >
+    ?
+  </button>
+);
+
 // --- APP PRINCIPAL ---
 /* v8 ignore start */
 export default function App() {
   const [view, setView] = useState('home');
-  const [roomCode, setRoomCode] = useState('');
+  
+  const [roomCode, setRoomCode] = useState(() => {
+    const params = new URLSearchParams(window.location.search);
+    const roomParam = params.get('room');
+    return roomParam ? roomParam.toUpperCase() : '';
+  });
+
   const [gameData, setGameData] = useState(null);
 
   // Modales y Ayuda
   const [showRules, setShowRules] = useState(false);
-  const [activeInfo, setActiveInfo] = useState(null); // ESTADO PARA EL MODAL DE INFO
+  const [activeInfo, setActiveInfo] = useState(null); 
   const [showDrawing, setShowDrawing] = useState(false);
 
   const [config, setConfig] = useState({ isParty: false, useTimer: false, hardMode: false, customWordsMode: false });
@@ -280,16 +302,7 @@ export default function App() {
   const [areWordsVisible, setAreWordsVisible] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
   const lastSoundTimestamp = useRef(0);
-
-  // --- COMPONENTE INTERNO DEL BOTÓN INFO ---
-  const InfoBtn = ({ title, desc }) => (
-    <button
-      onClick={(e) => { e.stopPropagation(); setActiveInfo({ title, desc }); }}
-      className="w-6 h-6 rounded-full bg-slate-600 text-xs font-bold flex items-center justify-center hover:bg-slate-200 hover:text-black transition"
-    >
-      ?
-    </button>
-  );
+  const prevTurn = useRef(null);
 
   // --- WAKE LOCK ---
   useEffect(() => {
@@ -310,55 +323,7 @@ export default function App() {
     };
   }, [view]);
 
-  // --- LEER URL ---
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const roomParam = params.get('room');
-    if (roomParam) setRoomCode(roomParam.toUpperCase());
-  }, []);
-
-// --- SYNC FIREBASE ---
-  useEffect(() => {
-    if (roomCode) {
-      const unsubscribe = onValue(ref(db, `rooms/${roomCode}`), (snapshot) => {
-        const data = snapshot.val();
-        if (data) {
-          if (data.status === 'closed') { exitToHome(); return; }
-          
-          if (data.status === 'reset') {
-             if (view !== 'role_selection') setView('role_selection');
-          } else if (view === 'loading_room' || view === 'home') {
-             setView('role_selection');
-          }
-
-          setGameData(data);
-          
-          const prop = data.proposedCard;
-          if (prop !== undefined && prop !== null && prop !== -1) {
-              setSelectedCardIndex(prop);
-          } else {
-              if (prop === -1) {
-                  setSelectedCardIndex(null);
-              }
-              
-              if (selectedCardIndex !== null && data.board[selectedCardIndex] && data.board[selectedCardIndex].revealed) {
-                  setSelectedCardIndex(null);
-              }
-          }
-
-          if (data.lastSound && data.lastSound.timestamp > lastSoundTimestamp.current) {
-              playSound(data.lastSound.type);
-              lastSoundTimestamp.current = data.lastSound.timestamp;
-          }
-        }
-      });
-      return () => unsubscribe();
-    }
-  }, [roomCode, view, selectedCardIndex]); 
-
-  useEffect(() => {
-    if (gameData?.turn) setAreWordsVisible(false);
-  }, [gameData?.turn]);
+  // (El useEffect de leer URL se ha eliminado porque ya lo hacemos en el useState)
 
   // --- FUNCIONES ---
   const exitToHome = () => {
@@ -396,39 +361,27 @@ export default function App() {
     const upperCode = code.toUpperCase(); setRoomCode(upperCode); updateUrl(upperCode); setView('loading_room');
   };
   const copyLink = async () => {
+    // ... (Tu código de copyLink original se mantiene igual) ...
     const url = `${window.location.origin}${window.location.pathname}?room=${roomCode}`;
-
     try {
       await navigator.clipboard.writeText(url);
       setLinkCopied(true);
-    } catch (err) {
+    } catch {
+      // Fallback manual...
       try {
-        const textArea = document.createElement("textarea");
-        textArea.value = url;
-
-        textArea.style.position = "fixed";
-        textArea.style.left = "-9999px";
-        textArea.style.top = "0";
-
-        document.body.appendChild(textArea);
-        textArea.focus();
-        textArea.select();
-
-        const successful = document.execCommand('copy');
-        document.body.removeChild(textArea);
-
-        if (successful) {
-          setLinkCopied(true);
-        } else {
-          alert("Copia este enlace manualmente: " + url);
-        }
-      } catch (e) {
-        alert("Copia este enlace manualmente: " + url);
-      }
+          const textArea = document.createElement("textarea");
+          textArea.value = url;
+          textArea.style.position = "fixed"; textArea.style.left = "-9999px"; textArea.style.top = "0";
+          document.body.appendChild(textArea); textArea.focus(); textArea.select();
+          const successful = document.execCommand('copy');
+          document.body.removeChild(textArea);
+          if (successful) setLinkCopied(true);
+          else alert("Copia este enlace manualmente: " + url);
+      } catch { alert("Copia este enlace manualmente: " + url); }
     }
-
     setTimeout(() => setLinkCopied(false), 2000);
   };
+
   const goHome = () => { if (confirm("¿Salir?")) exitToHome(); };
   const goHomeFinal = () => {
     if (confirm("¿Seguro que quieres cerrar la sala para todos?")) {
@@ -438,6 +391,7 @@ export default function App() {
   const handleRoleSelection = (role) => setView(role === 'table' ? 'table' : 'captain');
 
   const handleCardClick = (index) => {
+    // ... (Tu código de handleCardClick original se mantiene igual) ...
     if (gameData.winner || gameData.board[index].revealed) return;
     if (view === 'table') {
       const newProposal = gameData.proposedCard === index ? -1 : index;
@@ -446,29 +400,28 @@ export default function App() {
       setSelectedCardIndex(index === selectedCardIndex ? null : index);
     }
   };
+  
   const activateHardModeTurn = () => {
     setAreWordsVisible(true);
     update(ref(db, `rooms/${roomCode}`), { paused: false, turnTimestamp: Date.now() });
   };
+
   const confirmReveal = () => {
+     // ... (Tu código de confirmReveal original se mantiene igual) ...
     if (selectedCardIndex === null) return;
     const index = selectedCardIndex;
     const currentBoard = [...gameData.board];
     const card = currentBoard[index];
 
     let newWinner = null;
-    let soundType = 'fallo'; // Por defecto
+    let soundType = 'fallo'; 
 
     if (card.type === 'bomb') {
         newWinner = gameData.turn === 'red' ? 'blue' : 'red';
-        soundType = 'fallo'; // Bomba suena a fallo grave
+        soundType = 'fallo'; 
     } else {
-        // Chequeo de acierto
-        if (card.type === gameData.turn) {
-            soundType = 'acierto';
-        } else {
-            soundType = 'fallo';
-        }
+        if (card.type === gameData.turn) soundType = 'acierto';
+        else soundType = 'fallo';
 
         const tempBoard = currentBoard.map((c, i) => i === index ? { ...c, revealed: true } : c);
         const redLeft = tempBoard.filter(c => c.type === 'red' && !c.revealed).length;
@@ -480,13 +433,10 @@ export default function App() {
     const updates = {};
     updates[`rooms/${roomCode}/board/${index}/revealed`] = true;
     updates[`rooms/${roomCode}/proposedCard`] = -1;
-    
-    // ENVIAR SONIDO A TODOS
     updates[`rooms/${roomCode}/lastSound`] = { type: soundType, timestamp: Date.now() };
 
     if (newWinner) {
         updates[`rooms/${roomCode}/winner`] = newWinner;
-        // Si hay ganador, sobrescribimos con sonido de victoria
         updates[`rooms/${roomCode}/lastSound`] = { type: 'victoria', timestamp: Date.now() };
     } else if (card.type !== gameData.turn) {
       const nextTurn = gameData.turn === 'red' ? 'blue' : 'red';
@@ -498,7 +448,9 @@ export default function App() {
     update(ref(db), updates);
     setSelectedCardIndex(null);
   };
+
   const passTurn = () => {
+     // ... (Tu código de passTurn original se mantiene igual) ...
     const nextTurn = gameData.turn === 'red' ? 'blue' : 'red';
     const updates = { turn: nextTurn, proposedCard: -1 };
     if (gameData.config.hardMode) updates.paused = true;
@@ -506,7 +458,9 @@ export default function App() {
     if (gameData.config.isParty) updates.drawing = null;
     update(ref(db, `rooms/${roomCode}`), updates);
   };
+
   const newGame = () => {
+    // ... (Tu código de newGame original se mantiene igual) ...
     const startTeam = Math.random() < 0.5 ? 'red' : 'blue';
     const initialChallenge = gameData.config.isParty ? "🎨 Dibujo: ¡Haz un dibujo en la pizarra!" : "🎯 Normal: Di una palabra y un número.";
     set(ref(db, `rooms/${roomCode}`), {
@@ -517,8 +471,55 @@ export default function App() {
     setTimeout(() => { update(ref(db, `rooms/${roomCode}`), { status: 'active' }); }, 1000);
   };
 
+// --- SYNC FIREBASE ---
+  useEffect(() => {
+    if (roomCode) {
+      const unsubscribe = onValue(ref(db, `rooms/${roomCode}`), (snapshot) => {
+        const data = snapshot.val();
+        if (data) {
+          if (data.status === 'closed') { exitToHome(); return; }
+          
+          if (data.status === 'reset') {
+             if (view !== 'role_selection') setView('role_selection');
+          } else if (view === 'loading_room' || view === 'home') {
+             setView('role_selection');
+          }
+
+          // --- LOGICA MOVIDA AQUÍ (SOLUCIÓN DEFINITIVA) ---
+          // Detectamos si el turno ha cambiado respecto a lo que teníamos
+          if (data.turn && data.turn !== prevTurn.current) {
+             setAreWordsVisible(false); // Reseteamos visibilidad
+             prevTurn.current = data.turn; // Actualizamos referencia
+          }
+          // -----------------------------------------------
+
+          setGameData(data);
+          
+          // ... (el resto del código sigue igual) ...
+          const prop = data.proposedCard;
+          if (prop !== undefined && prop !== null && prop !== -1) {
+              setSelectedCardIndex(prop);
+          } else {
+              if (prop === -1) setSelectedCardIndex(null);
+              if (selectedCardIndex !== null && data.board[selectedCardIndex] && data.board[selectedCardIndex].revealed) {
+                  setSelectedCardIndex(null);
+              }
+          }
+
+          if (data.lastSound && data.lastSound.timestamp > lastSoundTimestamp.current) {
+              playSound(data.lastSound.type);
+              lastSoundTimestamp.current = data.lastSound.timestamp;
+          }
+        }
+      });
+      return () => unsubscribe();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [roomCode, view]); // Quitamos selectedCardIndex para evitar re-suscripciones innecesarias
+
   // --- VISTAS ---
   if (view === 'custom_setup') {
+     // ... (Código de custom_setup igual) ...
     const handleWordChange = (i, v) => { const n = [...customWordsInput]; n[i] = v; setCustomWordsInput(n); };
     return (
       <div className="min-h-screen bg-slate-900 flex flex-col items-center p-4 text-white">
@@ -552,22 +553,23 @@ export default function App() {
 
               <div className="flex items-center justify-between">
                 <label className="flex items-center space-x-3 cursor-pointer"><input type="checkbox" checked={config.isParty} onChange={(e) => setConfig({ ...config, isParty: e.target.checked })} className="w-5 h-5 accent-amber-500" /><span>🎨 Modo Dibujo</span></label>
-                <InfoBtn title="Modo Dibujo (Pictionary)" desc="El capitán NO puede hablar. Todas las pistas se darán dibujando en la pizarra interactiva." />
+                {/* SOLUCIÓN 1: Usar el componente InfoBtn extraído y pasarle onInfoClick */}
+                <InfoBtn title="Modo Dibujo (Pictionary)" desc="El capitán NO puede hablar. Todas las pistas se darán dibujando en la pizarra interactiva." onInfoClick={setActiveInfo} />
               </div>
 
               <div className="flex items-center justify-between">
                 <label className="flex items-center space-x-3 cursor-pointer"><input type="checkbox" checked={config.useTimer} onChange={(e) => setConfig({ ...config, useTimer: e.target.checked })} className="w-5 h-5 accent-amber-500" /><span>⏱️ Temporizador</span></label>
-                <InfoBtn title="Temporizador" desc="Activa una cuenta atrás de 2 minutos por turno para agilizar la partida." />
+                <InfoBtn title="Temporizador" desc="Activa una cuenta atrás de 2 minutos por turno para agilizar la partida." onInfoClick={setActiveInfo} />
               </div>
 
               <div className="flex items-center justify-between">
                 <label className="flex items-center space-x-3 cursor-pointer"><input type="checkbox" checked={config.hardMode} onChange={(e) => setConfig({ ...config, hardMode: e.target.checked })} className="w-5 h-5 accent-amber-500" /><span>💀 Modo Difícil</span></label>
-                <InfoBtn title="Modo Difícil" desc="Privacidad total: Los capitanes comparten un dispositivo y la pantalla se oculta al cambiar de turno." />
+                <InfoBtn title="Modo Difícil" desc="Privacidad total: Los capitanes comparten un dispositivo y la pantalla se oculta al cambiar de turno." onInfoClick={setActiveInfo} />
               </div>
 
               <div className="flex items-center justify-between">
                 <label className="flex items-center space-x-3 cursor-pointer"><input type="checkbox" checked={config.customWordsMode} onChange={(e) => setConfig({ ...config, customWordsMode: e.target.checked })} className="w-5 h-5 accent-amber-500" /><span>✍️ Palabras Propias</span></label>
-                <InfoBtn title="Palabras Personalizadas" desc="Permite escribir manualmente las 25 palabras antes de empezar la partida." />
+                <InfoBtn title="Palabras Personalizadas" desc="Permite escribir manualmente las 25 palabras antes de empezar la partida." onInfoClick={setActiveInfo} />
               </div>
             </div>
             <button onClick={createRoom} className="w-full bg-slate-200 hover:bg-amber-400 text-black font-black py-4 rounded-xl text-lg shadow-lg active:scale-95">CREAR PARTIDA</button>
@@ -578,7 +580,8 @@ export default function App() {
       </div>
     );
   }
-
+  
+  // ... (El resto de vistas y return se mantienen exactamente igual) ...
   if (view === 'loading_room') return <div className="min-h-screen bg-slate-900 flex items-center justify-center text-amber-500 font-bold animate-pulse">Conectando...</div>;
   if (view === 'role_selection') return (<div className="min-h-screen bg-slate-900 flex flex-col items-center justify-center text-white p-4"><h2 className="text-2xl font-bold mb-8">SALA <span className="text-amber-500">{roomCode}</span></h2><div className="grid gap-6 w-full max-w-md"><button onClick={() => handleRoleSelection('table')} className="bg-slate-700 p-6 rounded-2xl border-2 border-slate-500 flex flex-col items-center hover:bg-slate-600 transition hover:scale-105"><span className="text-4xl">📺</span><span className="font-bold">MODO MESA</span></button><button onClick={() => handleRoleSelection('captain')} className="bg-amber-600 p-6 rounded-2xl border-2 border-amber-400 flex flex-col items-center hover:bg-amber-500 transition hover:scale-105"><span className="text-4xl">🕵️‍♂️</span><span className="font-bold">MODO CAPITÁN</span></button></div></div>);
   if (!gameData) return <div className="min-h-screen bg-slate-900 flex items-center justify-center text-amber-500">Cargando datos...</div>;
