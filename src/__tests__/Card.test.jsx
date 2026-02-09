@@ -7,6 +7,11 @@ describe('Componente <Card />', () => {
     const mockDataRed = { word: 'SOL', type: 'red', revealed: false };
 //    const mockDataBomb = { word: 'BOOM', type: 'bomb', revealed: false };
 
+    it('Coincide con el snapshot (No ha cambiado visualmente)', () => {
+        const { container } = render(<Card data={mockDataRed} viewMode="table" onClick={() => {}} />);
+        expect(container).toMatchSnapshot();
+    });
+
     it('Muestra la palabra correctamente', () => {
         render(<Card data={mockDataRed} viewMode="table" onClick={() => {}} />);
         expect(screen.getByText('SOL')).toBeInTheDocument();

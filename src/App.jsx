@@ -168,7 +168,7 @@ const DrawingBoard = ({ isOpen, onClose, isCaptain, roomCode, existingImage }) =
 };
 
 // --- TIMER ---
-const Timer = ({ turnTimestamp, turnDuration, isPaused }) => {
+export const Timer = ({ turnTimestamp, turnDuration, isPaused }) => {
   const [timeLeft, setTimeLeft] = useState(turnDuration);
   useEffect(() => {
     if (isPaused) return;
