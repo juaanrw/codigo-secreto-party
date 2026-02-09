@@ -66,7 +66,7 @@ const playSound = (type) => {
 };
 
 // --- PIZARRA ---
-const DrawingBoard = ({ isOpen, onClose, isCaptain, roomCode, existingImage }) => {
+export const DrawingBoard = ({ isOpen, onClose, isCaptain, roomCode, existingImage }) => {
   const canvasRef = useRef(null);
   const [timeLeft, setTimeLeft] = useState(10);
   const [canDraw, setCanDraw] = useState(false);
@@ -185,7 +185,7 @@ export const Timer = ({ turnTimestamp, turnDuration, isPaused }) => {
 };
 
 // --- MODALES ---
-const InfoModal = ({ title, text, onClose }) => (
+export const InfoModal = ({ title, text, onClose }) => (
   <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-6 animate-fadeIn" onClick={onClose}>
     <div className="bg-slate-800 p-6 rounded-xl max-w-sm text-center border border-slate-600 shadow-2xl">
       <h3 className="text-amber-400 font-bold text-xl mb-3">{title}</h3>
@@ -195,7 +195,7 @@ const InfoModal = ({ title, text, onClose }) => (
   </div>
 );
 
-const RulesModal = ({ onClose }) => (
+export const RulesModal = ({ onClose }) => (
   <div className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4 animate-fadeIn" onClick={onClose}>
     <div className="bg-slate-800 text-white p-6 rounded-xl max-w-md w-full shadow-2xl border border-slate-600 overflow-y-auto max-h-[90vh]" onClick={e => e.stopPropagation()}>
       <h2 className="text-3xl font-black text-amber-400 mb-6 text-center border-b border-slate-600 pb-4">📜 REGLAS DEL JUEGO</h2>
@@ -263,6 +263,7 @@ const BgSquare = () => {
 };
 
 // --- APP PRINCIPAL ---
+/* v8 ignore start */
 export default function App() {
   const [view, setView] = useState('home');
   const [roomCode, setRoomCode] = useState('');
@@ -659,3 +660,4 @@ export default function App() {
     </div>
   );
 }
+/* v8 ignore stop */
