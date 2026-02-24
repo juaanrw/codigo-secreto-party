@@ -1,6 +1,8 @@
+/* eslint-env serviceworker */
+/* global clients */
 const CACHE_NAME = 'codigo-secreto-v1';
 
-self.addEventListener('install', (event) => {
+self.addEventListener('install', () => {
     self.skipWaiting();
 });
 
