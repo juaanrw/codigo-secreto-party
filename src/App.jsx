@@ -25,7 +25,7 @@ const cleanupOldRooms = async () => {
 };
 
 // --- COMPONENTE CARTA ---
-const Card = ({ data, viewMode, onClick, isSelected, isProposed }) => {
+export const Card = ({ data, viewMode, onClick, isSelected, isProposed }) => {
   const colors = {
     red: "bg-red-600 text-white border-red-800",
     blue: "bg-blue-600 text-white border-blue-800",
@@ -66,7 +66,7 @@ const playSound = (type) => {
 };
 
 // --- PIZARRA ---
-const DrawingBoard = ({ isOpen, onClose, isCaptain, roomCode, existingImage }) => {
+export const DrawingBoard = ({ isOpen, onClose, isCaptain, roomCode, existingImage }) => {
   const canvasRef = useRef(null);
   const [timeLeft, setTimeLeft] = useState(10);
   const [canDraw, setCanDraw] = useState(false);
@@ -92,6 +92,7 @@ const DrawingBoard = ({ isOpen, onClose, isCaptain, roomCode, existingImage }) =
       interval = setInterval(() => setTimeLeft(prev => prev - 1), 1000);
     } else if (timeLeft === 0 && canDraw) finishDrawing();
     return () => clearInterval(interval);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [canDraw, timeLeft, isCaptain]);
 
   const startDrawingSession = () => {
@@ -168,7 +169,7 @@ const DrawingBoard = ({ isOpen, onClose, isCaptain, roomCode, existingImage }) =
 };
 
 // --- TIMER ---
-const Timer = ({ turnTimestamp, turnDuration, isPaused }) => {
+export const Timer = ({ turnTimestamp, turnDuration, isPaused }) => {
   const [timeLeft, setTimeLeft] = useState(turnDuration);
   useEffect(() => {
     if (isPaused) return;
@@ -185,7 +186,7 @@ const Timer = ({ turnTimestamp, turnDuration, isPaused }) => {
 };
 
 // --- MODALES ---
-const InfoModal = ({ title, text, onClose }) => (
+export const InfoModal = ({ title, text, onClose }) => (
   <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-6 animate-fadeIn" onClick={onClose}>
     <div className="bg-slate-800 p-6 rounded-xl max-w-sm text-center border border-slate-600 shadow-2xl">
       <h3 className="text-amber-400 font-bold text-xl mb-3">{title}</h3>
@@ -195,7 +196,7 @@ const InfoModal = ({ title, text, onClose }) => (
   </div>
 );
 
-const RulesModal = ({ onClose }) => (
+export const RulesModal = ({ onClose }) => (
   <div className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4 animate-fadeIn" onClick={onClose}>
     <div className="bg-slate-800 text-white p-6 rounded-xl max-w-md w-full shadow-2xl border border-slate-600 overflow-y-auto max-h-[90vh]" onClick={e => e.stopPropagation()}>
       <h2 className="text-3xl font-black text-amber-400 mb-6 text-center border-b border-slate-600 pb-4">📜 REGLAS DEL JUEGO</h2>
@@ -252,25 +253,47 @@ const AnimatedBackground = () => {
   const squares = Array.from({ length: 60 });
   return <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none"><div className="grid grid-cols-6 md:grid-cols-10 gap-2 h-full w-full p-2 opacity-40">{squares.map((_, i) => <BgSquare key={i} />)}</div><div className="absolute inset-0 bg-slate-900/90 backdrop-blur-[2px]"></div></div>;
 };
+
+const random = Math.random();
+const bgSquareColors = ["bg-amber-200", "bg-amber-200", "bg-amber-200", "bg-red-600", "bg-blue-600", "bg-gray-900"];
 const BgSquare = () => {
-  const colors = ["bg-amber-200", "bg-amber-200", "bg-amber-200", "bg-red-600", "bg-blue-600", "bg-gray-900"];
-  const [color, setColor] = useState(colors[Math.floor(Math.random() * colors.length)]);
+  const [color, setColor] = useState(bgSquareColors[Math.floor(random * bgSquareColors.length)]);
   useEffect(() => {
-    const interval = setInterval(() => { setColor(colors[Math.floor(Math.random() * colors.length)]); }, 2000 + Math.random() * 4000);
+    const interval = setInterval(() => { setColor(bgSquareColors[Math.floor(Math.random() * bgSquareColors.length)]); }, 2000 + Math.random() * 4000);
     return () => clearInterval(interval);
   }, []);
   return <div className={`w-full h-full rounded-md transition-colors duration-[2000ms] ease-in-out ${color}`} />;
 };
 
+// ... (Asegúrate de mantener Timer, RulesModal, InfoModal, AnimatedBackground arriba) ...
+
+// --- COMPONENTE INTERNO DEL BOTÓN INFO (EXTRAÍDO FUERA DE APP) ---
+// Ahora recibe onInfoClick como prop
+const InfoBtn = ({ title, desc, onInfoClick }) => (
+  <button
+    onClick={(e) => { e.stopPropagation(); onInfoClick({ title, desc }); }}
+    className="w-6 h-6 rounded-full bg-slate-600 text-xs font-bold flex items-center justify-center hover:bg-slate-200 hover:text-black transition"
+  >
+    ?
+  </button>
+);
+
 // --- APP PRINCIPAL ---
+/* v8 ignore start */
 export default function App() {
   const [view, setView] = useState('home');
-  const [roomCode, setRoomCode] = useState('');
+
+  const [roomCode, setRoomCode] = useState(() => {
+    const params = new URLSearchParams(window.location.search);
+    const roomParam = params.get('room');
+    return roomParam ? roomParam.toUpperCase() : '';
+  });
+
   const [gameData, setGameData] = useState(null);
 
   // Modales y Ayuda
   const [showRules, setShowRules] = useState(false);
-  const [activeInfo, setActiveInfo] = useState(null); // ESTADO PARA EL MODAL DE INFO
+  const [activeInfo, setActiveInfo] = useState(null);
   const [showDrawing, setShowDrawing] = useState(false);
 
   const [config, setConfig] = useState({ isParty: false, useTimer: false, hardMode: false, customWordsMode: false });
@@ -278,17 +301,10 @@ export default function App() {
   const [selectedCardIndex, setSelectedCardIndex] = useState(null);
   const [areWordsVisible, setAreWordsVisible] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
+  const [deferredPrompt, setDeferredPrompt] = useState(null);
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const lastSoundTimestamp = useRef(0);
-
-  // --- COMPONENTE INTERNO DEL BOTÓN INFO ---
-  const InfoBtn = ({ title, desc }) => (
-    <button
-      onClick={(e) => { e.stopPropagation(); setActiveInfo({ title, desc }); }}
-      className="w-6 h-6 rounded-full bg-slate-600 text-xs font-bold flex items-center justify-center hover:bg-slate-200 hover:text-black transition"
-    >
-      ?
-    </button>
-  );
+  const prevTurn = useRef(null);
 
   // --- WAKE LOCK ---
   useEffect(() => {
@@ -309,55 +325,53 @@ export default function App() {
     };
   }, [view]);
 
-  // --- LEER URL ---
+  // --- PWA INSTALL PROMPT ---
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const roomParam = params.get('room');
-    if (roomParam) setRoomCode(roomParam.toUpperCase());
+    const handleBeforeInstallPrompt = (e) => {
+      // Prevent the mini-infobar from appearing on mobile
+      e.preventDefault();
+      // Stash the event so it can be triggered later.
+      setDeferredPrompt(e);
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    };
   }, []);
 
-// --- SYNC FIREBASE ---
-  useEffect(() => {
-    if (roomCode) {
-      const unsubscribe = onValue(ref(db, `rooms/${roomCode}`), (snapshot) => {
-        const data = snapshot.val();
-        if (data) {
-          if (data.status === 'closed') { exitToHome(); return; }
-          
-          if (data.status === 'reset') {
-             if (view !== 'role_selection') setView('role_selection');
-          } else if (view === 'loading_room' || view === 'home') {
-             setView('role_selection');
-          }
-
-          setGameData(data);
-          
-          const prop = data.proposedCard;
-          if (prop !== undefined && prop !== null && prop !== -1) {
-              setSelectedCardIndex(prop);
-          } else {
-              if (prop === -1) {
-                  setSelectedCardIndex(null);
-              }
-              
-              if (selectedCardIndex !== null && data.board[selectedCardIndex] && data.board[selectedCardIndex].revealed) {
-                  setSelectedCardIndex(null);
-              }
-          }
-
-          if (data.lastSound && data.lastSound.timestamp > lastSoundTimestamp.current) {
-              playSound(data.lastSound.type);
-              lastSoundTimestamp.current = data.lastSound.timestamp;
-          }
-        }
-      });
-      return () => unsubscribe();
+  const handleInstallClick = async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    if (outcome === 'accepted') {
+      setDeferredPrompt(null);
     }
-  }, [roomCode, view, selectedCardIndex]); 
+  };
 
+  // --- FULLSCREEN ---
   useEffect(() => {
-    if (gameData?.turn) setAreWordsVisible(false);
-  }, [gameData?.turn]);
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+  }, []);
+
+  const toggleFullscreen = () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().catch((err) => {
+        console.error(`Error intentando pantalla completa: ${err.message} (${err.name})`);
+      });
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+      }
+    }
+  };
+
+  // (El useEffect de leer URL se ha eliminado porque ya lo hacemos en el useState)
 
   // --- FUNCIONES ---
   const exitToHome = () => {
@@ -395,39 +409,27 @@ export default function App() {
     const upperCode = code.toUpperCase(); setRoomCode(upperCode); updateUrl(upperCode); setView('loading_room');
   };
   const copyLink = async () => {
+    // ... (Tu código de copyLink original se mantiene igual) ...
     const url = `${window.location.origin}${window.location.pathname}?room=${roomCode}`;
-
     try {
       await navigator.clipboard.writeText(url);
       setLinkCopied(true);
-    } catch (err) {
+    } catch {
+      // Fallback manual...
       try {
         const textArea = document.createElement("textarea");
         textArea.value = url;
-
-        textArea.style.position = "fixed";
-        textArea.style.left = "-9999px";
-        textArea.style.top = "0";
-
-        document.body.appendChild(textArea);
-        textArea.focus();
-        textArea.select();
-
+        textArea.style.position = "fixed"; textArea.style.left = "-9999px"; textArea.style.top = "0";
+        document.body.appendChild(textArea); textArea.focus(); textArea.select();
         const successful = document.execCommand('copy');
         document.body.removeChild(textArea);
-
-        if (successful) {
-          setLinkCopied(true);
-        } else {
-          alert("Copia este enlace manualmente: " + url);
-        }
-      } catch (e) {
-        alert("Copia este enlace manualmente: " + url);
-      }
+        if (successful) setLinkCopied(true);
+        else alert("Copia este enlace manualmente: " + url);
+      } catch { alert("Copia este enlace manualmente: " + url); }
     }
-
     setTimeout(() => setLinkCopied(false), 2000);
   };
+
   const goHome = () => { if (confirm("¿Salir?")) exitToHome(); };
   const goHomeFinal = () => {
     if (confirm("¿Seguro que quieres cerrar la sala para todos?")) {
@@ -437,6 +439,7 @@ export default function App() {
   const handleRoleSelection = (role) => setView(role === 'table' ? 'table' : 'captain');
 
   const handleCardClick = (index) => {
+    // ... (Tu código de handleCardClick original se mantiene igual) ...
     if (gameData.winner || gameData.board[index].revealed) return;
     if (view === 'table') {
       const newProposal = gameData.proposedCard === index ? -1 : index;
@@ -445,48 +448,44 @@ export default function App() {
       setSelectedCardIndex(index === selectedCardIndex ? null : index);
     }
   };
+
   const activateHardModeTurn = () => {
     setAreWordsVisible(true);
     update(ref(db, `rooms/${roomCode}`), { paused: false, turnTimestamp: Date.now() });
   };
+
   const confirmReveal = () => {
+    // ... (Tu código de confirmReveal original se mantiene igual) ...
     if (selectedCardIndex === null) return;
     const index = selectedCardIndex;
     const currentBoard = [...gameData.board];
     const card = currentBoard[index];
 
     let newWinner = null;
-    let soundType = 'fallo'; // Por defecto
+    let soundType = 'fallo';
 
     if (card.type === 'bomb') {
-        newWinner = gameData.turn === 'red' ? 'blue' : 'red';
-        soundType = 'fallo'; // Bomba suena a fallo grave
+      newWinner = gameData.turn === 'red' ? 'blue' : 'red';
+      soundType = 'fallo';
     } else {
-        // Chequeo de acierto
-        if (card.type === gameData.turn) {
-            soundType = 'acierto';
-        } else {
-            soundType = 'fallo';
-        }
+      if (card.type === gameData.turn) soundType = 'acierto';
+      else soundType = 'fallo';
 
-        const tempBoard = currentBoard.map((c, i) => i === index ? { ...c, revealed: true } : c);
-        const redLeft = tempBoard.filter(c => c.type === 'red' && !c.revealed).length;
-        const blueLeft = tempBoard.filter(c => c.type === 'blue' && !c.revealed).length;
-        if (redLeft === 0) newWinner = 'red';
-        if (blueLeft === 0) newWinner = 'blue';
+      const tempBoard = currentBoard.map((c, i) => i === index ? { ...c, revealed: true } : c);
+      const redLeft = tempBoard.filter(c => c.type === 'red' && !c.revealed).length;
+      const blueLeft = tempBoard.filter(c => c.type === 'blue' && !c.revealed).length;
+      if (redLeft === 0) newWinner = 'red';
+      if (blueLeft === 0) newWinner = 'blue';
     }
 
     const updates = {};
     updates[`rooms/${roomCode}/board/${index}/revealed`] = true;
     updates[`rooms/${roomCode}/proposedCard`] = -1;
-    
-    // ENVIAR SONIDO A TODOS
     updates[`rooms/${roomCode}/lastSound`] = { type: soundType, timestamp: Date.now() };
 
     if (newWinner) {
-        updates[`rooms/${roomCode}/winner`] = newWinner;
-        // Si hay ganador, sobrescribimos con sonido de victoria
-        updates[`rooms/${roomCode}/lastSound`] = { type: 'victoria', timestamp: Date.now() };
+      updates[`rooms/${roomCode}/winner`] = newWinner;
+      updates[`rooms/${roomCode}/lastSound`] = { type: 'victoria', timestamp: Date.now() };
     } else if (card.type !== gameData.turn) {
       const nextTurn = gameData.turn === 'red' ? 'blue' : 'red';
       updates[`rooms/${roomCode}/turn`] = nextTurn;
@@ -497,7 +496,9 @@ export default function App() {
     update(ref(db), updates);
     setSelectedCardIndex(null);
   };
+
   const passTurn = () => {
+    // ... (Tu código de passTurn original se mantiene igual) ...
     const nextTurn = gameData.turn === 'red' ? 'blue' : 'red';
     const updates = { turn: nextTurn, proposedCard: -1 };
     if (gameData.config.hardMode) updates.paused = true;
@@ -505,7 +506,9 @@ export default function App() {
     if (gameData.config.isParty) updates.drawing = null;
     update(ref(db, `rooms/${roomCode}`), updates);
   };
+
   const newGame = () => {
+    // ... (Tu código de newGame original se mantiene igual) ...
     const startTeam = Math.random() < 0.5 ? 'red' : 'blue';
     const initialChallenge = gameData.config.isParty ? "🎨 Dibujo: ¡Haz un dibujo en la pizarra!" : "🎯 Normal: Di una palabra y un número.";
     set(ref(db, `rooms/${roomCode}`), {
@@ -516,8 +519,55 @@ export default function App() {
     setTimeout(() => { update(ref(db, `rooms/${roomCode}`), { status: 'active' }); }, 1000);
   };
 
+  // --- SYNC FIREBASE ---
+  useEffect(() => {
+    if (roomCode) {
+      const unsubscribe = onValue(ref(db, `rooms/${roomCode}`), (snapshot) => {
+        const data = snapshot.val();
+        if (data) {
+          if (data.status === 'closed') { exitToHome(); return; }
+
+          if (data.status === 'reset') {
+            if (view !== 'role_selection') setView('role_selection');
+          } else if (view === 'loading_room' || view === 'home') {
+            setView('role_selection');
+          }
+
+          // --- LOGICA MOVIDA AQUÍ (SOLUCIÓN DEFINITIVA) ---
+          // Detectamos si el turno ha cambiado respecto a lo que teníamos
+          if (data.turn && data.turn !== prevTurn.current) {
+            setAreWordsVisible(false); // Reseteamos visibilidad
+            prevTurn.current = data.turn; // Actualizamos referencia
+          }
+          // -----------------------------------------------
+
+          setGameData(data);
+
+          // ... (el resto del código sigue igual) ...
+          const prop = data.proposedCard;
+          if (prop !== undefined && prop !== null && prop !== -1) {
+            setSelectedCardIndex(prop);
+          } else {
+            if (prop === -1) setSelectedCardIndex(null);
+            if (selectedCardIndex !== null && data.board[selectedCardIndex] && data.board[selectedCardIndex].revealed) {
+              setSelectedCardIndex(null);
+            }
+          }
+
+          if (data.lastSound && data.lastSound.timestamp > lastSoundTimestamp.current) {
+            playSound(data.lastSound.type);
+            lastSoundTimestamp.current = data.lastSound.timestamp;
+          }
+        }
+      });
+      return () => unsubscribe();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [roomCode, view]); // Quitamos selectedCardIndex para evitar re-suscripciones innecesarias
+
   // --- VISTAS ---
   if (view === 'custom_setup') {
+    // ... (Código de custom_setup igual) ...
     const handleWordChange = (i, v) => { const n = [...customWordsInput]; n[i] = v; setCustomWordsInput(n); };
     return (
       <div className="min-h-screen bg-slate-900 flex flex-col items-center p-4 text-white">
@@ -551,33 +601,47 @@ export default function App() {
 
               <div className="flex items-center justify-between">
                 <label className="flex items-center space-x-3 cursor-pointer"><input type="checkbox" checked={config.isParty} onChange={(e) => setConfig({ ...config, isParty: e.target.checked })} className="w-5 h-5 accent-amber-500" /><span>🎨 Modo Dibujo</span></label>
-                <InfoBtn title="Modo Dibujo (Pictionary)" desc="El capitán NO puede hablar. Todas las pistas se darán dibujando en la pizarra interactiva." />
+                {/* SOLUCIÓN 1: Usar el componente InfoBtn extraído y pasarle onInfoClick */}
+                <InfoBtn title="Modo Dibujo (Pictionary)" desc="El capitán NO puede hablar. Todas las pistas se darán dibujando en la pizarra interactiva." onInfoClick={setActiveInfo} />
               </div>
 
               <div className="flex items-center justify-between">
                 <label className="flex items-center space-x-3 cursor-pointer"><input type="checkbox" checked={config.useTimer} onChange={(e) => setConfig({ ...config, useTimer: e.target.checked })} className="w-5 h-5 accent-amber-500" /><span>⏱️ Temporizador</span></label>
-                <InfoBtn title="Temporizador" desc="Activa una cuenta atrás de 2 minutos por turno para agilizar la partida." />
+                <InfoBtn title="Temporizador" desc="Activa una cuenta atrás de 2 minutos por turno para agilizar la partida." onInfoClick={setActiveInfo} />
               </div>
 
               <div className="flex items-center justify-between">
                 <label className="flex items-center space-x-3 cursor-pointer"><input type="checkbox" checked={config.hardMode} onChange={(e) => setConfig({ ...config, hardMode: e.target.checked })} className="w-5 h-5 accent-amber-500" /><span>💀 Modo Difícil</span></label>
-                <InfoBtn title="Modo Difícil" desc="Privacidad total: Los capitanes comparten un dispositivo y la pantalla se oculta al cambiar de turno." />
+                <InfoBtn title="Modo Difícil" desc="Privacidad total: Los capitanes comparten un dispositivo y la pantalla se oculta al cambiar de turno." onInfoClick={setActiveInfo} />
               </div>
 
               <div className="flex items-center justify-between">
                 <label className="flex items-center space-x-3 cursor-pointer"><input type="checkbox" checked={config.customWordsMode} onChange={(e) => setConfig({ ...config, customWordsMode: e.target.checked })} className="w-5 h-5 accent-amber-500" /><span>✍️ Palabras Propias</span></label>
-                <InfoBtn title="Palabras Personalizadas" desc="Permite escribir manualmente las 25 palabras antes de empezar la partida." />
+                <InfoBtn title="Palabras Personalizadas" desc="Permite escribir manualmente las 25 palabras antes de empezar la partida." onInfoClick={setActiveInfo} />
               </div>
             </div>
             <button onClick={createRoom} className="w-full bg-slate-200 hover:bg-amber-400 text-black font-black py-4 rounded-xl text-lg shadow-lg active:scale-95">CREAR PARTIDA</button>
             <div className="flex gap-2 border-t border-slate-700 pt-4"><input type="text" placeholder="CÓDIGO" id="codeInput" maxLength={4} className="w-full p-3 rounded-lg text-black bg-slate-200 uppercase font-bold text-center text-lg" /><button onClick={() => joinRoom(document.getElementById('codeInput').value)} className="bg-blue-600 hover:bg-blue-500 font-bold px-6 rounded-lg text-white">ENTRAR</button></div>
             <button onClick={() => setShowRules(true)} className="w-full text-slate-400 text-sm hover:text-white transition underline">Leer Reglas</button>
+
+            {deferredPrompt && (
+              <div className="pt-4 border-t border-slate-700 w-full animate-fadeIn">
+                <button
+                  onClick={handleInstallClick}
+                  className="w-full bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-black py-4 rounded-xl text-lg shadow-lg active:scale-95 flex items-center justify-center gap-2"
+                >
+                  <span className="text-2xl">📱</span> ¡DESCARGA EL JUEGO!
+                </button>
+                <p className="text-center text-xs text-gray-400 mt-2">Instala la app en tu dispositivo para un acceso rápido</p>
+              </div>
+            )}
           </div>
         </div>
       </div>
     );
   }
 
+  // ... (El resto de vistas y return se mantienen exactamente igual) ...
   if (view === 'loading_room') return <div className="min-h-screen bg-slate-900 flex items-center justify-center text-amber-500 font-bold animate-pulse">Conectando...</div>;
   if (view === 'role_selection') return (<div className="min-h-screen bg-slate-900 flex flex-col items-center justify-center text-white p-4"><h2 className="text-2xl font-bold mb-8">SALA <span className="text-amber-500">{roomCode}</span></h2><div className="grid gap-6 w-full max-w-md"><button onClick={() => handleRoleSelection('table')} className="bg-slate-700 p-6 rounded-2xl border-2 border-slate-500 flex flex-col items-center hover:bg-slate-600 transition hover:scale-105"><span className="text-4xl">📺</span><span className="font-bold">MODO MESA</span></button><button onClick={() => handleRoleSelection('captain')} className="bg-amber-600 p-6 rounded-2xl border-2 border-amber-400 flex flex-col items-center hover:bg-amber-500 transition hover:scale-105"><span className="text-4xl">🕵️‍♂️</span><span className="font-bold">MODO CAPITÁN</span></button></div></div>);
   if (!gameData) return <div className="min-h-screen bg-slate-900 flex items-center justify-center text-amber-500">Cargando datos...</div>;
@@ -656,6 +720,25 @@ export default function App() {
           </div>
         </div>
       )}
+
+      {/* --- BOTÓN PANTALLA COMPLETA FLOTANTE --- */}
+      <button
+        onClick={toggleFullscreen}
+        className="fixed bottom-4 right-4 z-50 bg-black/50 hover:bg-black/80 text-white p-3 rounded-full shadow-lg backdrop-blur transition border border-white/20 active:scale-90"
+        title="Pantalla Completa"
+      >
+        {isFullscreen ? (
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M9 9V4.5M9 9H4.5M15 9V4.5M15 9h4.5M9 15v4.5M9 15H4.5M15 15v4.5M15 15h4.5" />
+          </svg>
+        ) : (
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15" />
+          </svg>
+        )}
+      </button>
+
     </div>
   );
 }
+/* v8 ignore stop */

@@ -2,7 +2,7 @@
 
 **Una adaptación digital y moderna del clásico juego de mesa, diseñada para jugar en fiestas con amigos usando solo vuestros móviles.**
 
-🔗 **[JUEGA AHORA AQUÍ](https://codigo-secreto-party.vercel.app)**
+🔗 **[JUEGA AHORA AQUÍ](https://codigo-secreto.com)**
 
 ---
 
