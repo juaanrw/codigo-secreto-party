@@ -302,6 +302,7 @@ export default function App() {
   const [areWordsVisible, setAreWordsVisible] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState(null);
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const lastSoundTimestamp = useRef(0);
   const prevTurn = useRef(null);
 
@@ -346,6 +347,27 @@ export default function App() {
     const { outcome } = await deferredPrompt.userChoice;
     if (outcome === 'accepted') {
       setDeferredPrompt(null);
+    }
+  };
+
+  // --- FULLSCREEN ---
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+  }, []);
+
+  const toggleFullscreen = () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().catch((err) => {
+        console.error(`Error intentando pantalla completa: ${err.message} (${err.name})`);
+      });
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+      }
     }
   };
 
@@ -698,6 +720,24 @@ export default function App() {
           </div>
         </div>
       )}
+
+      {/* --- BOTÓN PANTALLA COMPLETA FLOTANTE --- */}
+      <button
+        onClick={toggleFullscreen}
+        className="fixed bottom-4 right-4 z-50 bg-black/50 hover:bg-black/80 text-white p-3 rounded-full shadow-lg backdrop-blur transition border border-white/20 active:scale-90"
+        title="Pantalla Completa"
+      >
+        {isFullscreen ? (
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M9 9V4.5M9 9H4.5M15 9V4.5M15 9h4.5M9 15v4.5M9 15H4.5M15 15v4.5M15 15h4.5" />
+          </svg>
+        ) : (
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15" />
+          </svg>
+        )}
+      </button>
+
     </div>
   );
 }
