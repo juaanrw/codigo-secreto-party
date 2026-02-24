@@ -282,7 +282,7 @@ const InfoBtn = ({ title, desc, onInfoClick }) => (
 /* v8 ignore start */
 export default function App() {
   const [view, setView] = useState('home');
-  
+
   const [roomCode, setRoomCode] = useState(() => {
     const params = new URLSearchParams(window.location.search);
     const roomParam = params.get('room');
@@ -293,7 +293,7 @@ export default function App() {
 
   // Modales y Ayuda
   const [showRules, setShowRules] = useState(false);
-  const [activeInfo, setActiveInfo] = useState(null); 
+  const [activeInfo, setActiveInfo] = useState(null);
   const [showDrawing, setShowDrawing] = useState(false);
 
   const [config, setConfig] = useState({ isParty: false, useTimer: false, hardMode: false, customWordsMode: false });
@@ -301,6 +301,7 @@ export default function App() {
   const [selectedCardIndex, setSelectedCardIndex] = useState(null);
   const [areWordsVisible, setAreWordsVisible] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
+  const [deferredPrompt, setDeferredPrompt] = useState(null);
   const lastSoundTimestamp = useRef(0);
   const prevTurn = useRef(null);
 
@@ -322,6 +323,31 @@ export default function App() {
       if (wakeLock) wakeLock.release();
     };
   }, [view]);
+
+  // --- PWA INSTALL PROMPT ---
+  useEffect(() => {
+    const handleBeforeInstallPrompt = (e) => {
+      // Prevent the mini-infobar from appearing on mobile
+      e.preventDefault();
+      // Stash the event so it can be triggered later.
+      setDeferredPrompt(e);
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    };
+  }, []);
+
+  const handleInstallClick = async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    if (outcome === 'accepted') {
+      setDeferredPrompt(null);
+    }
+  };
 
   // (El useEffect de leer URL se ha eliminado porque ya lo hacemos en el useState)
 
@@ -369,14 +395,14 @@ export default function App() {
     } catch {
       // Fallback manual...
       try {
-          const textArea = document.createElement("textarea");
-          textArea.value = url;
-          textArea.style.position = "fixed"; textArea.style.left = "-9999px"; textArea.style.top = "0";
-          document.body.appendChild(textArea); textArea.focus(); textArea.select();
-          const successful = document.execCommand('copy');
-          document.body.removeChild(textArea);
-          if (successful) setLinkCopied(true);
-          else alert("Copia este enlace manualmente: " + url);
+        const textArea = document.createElement("textarea");
+        textArea.value = url;
+        textArea.style.position = "fixed"; textArea.style.left = "-9999px"; textArea.style.top = "0";
+        document.body.appendChild(textArea); textArea.focus(); textArea.select();
+        const successful = document.execCommand('copy');
+        document.body.removeChild(textArea);
+        if (successful) setLinkCopied(true);
+        else alert("Copia este enlace manualmente: " + url);
       } catch { alert("Copia este enlace manualmente: " + url); }
     }
     setTimeout(() => setLinkCopied(false), 2000);
@@ -400,34 +426,34 @@ export default function App() {
       setSelectedCardIndex(index === selectedCardIndex ? null : index);
     }
   };
-  
+
   const activateHardModeTurn = () => {
     setAreWordsVisible(true);
     update(ref(db, `rooms/${roomCode}`), { paused: false, turnTimestamp: Date.now() });
   };
 
   const confirmReveal = () => {
-     // ... (Tu código de confirmReveal original se mantiene igual) ...
+    // ... (Tu código de confirmReveal original se mantiene igual) ...
     if (selectedCardIndex === null) return;
     const index = selectedCardIndex;
     const currentBoard = [...gameData.board];
     const card = currentBoard[index];
 
     let newWinner = null;
-    let soundType = 'fallo'; 
+    let soundType = 'fallo';
 
     if (card.type === 'bomb') {
-        newWinner = gameData.turn === 'red' ? 'blue' : 'red';
-        soundType = 'fallo'; 
+      newWinner = gameData.turn === 'red' ? 'blue' : 'red';
+      soundType = 'fallo';
     } else {
-        if (card.type === gameData.turn) soundType = 'acierto';
-        else soundType = 'fallo';
+      if (card.type === gameData.turn) soundType = 'acierto';
+      else soundType = 'fallo';
 
-        const tempBoard = currentBoard.map((c, i) => i === index ? { ...c, revealed: true } : c);
-        const redLeft = tempBoard.filter(c => c.type === 'red' && !c.revealed).length;
-        const blueLeft = tempBoard.filter(c => c.type === 'blue' && !c.revealed).length;
-        if (redLeft === 0) newWinner = 'red';
-        if (blueLeft === 0) newWinner = 'blue';
+      const tempBoard = currentBoard.map((c, i) => i === index ? { ...c, revealed: true } : c);
+      const redLeft = tempBoard.filter(c => c.type === 'red' && !c.revealed).length;
+      const blueLeft = tempBoard.filter(c => c.type === 'blue' && !c.revealed).length;
+      if (redLeft === 0) newWinner = 'red';
+      if (blueLeft === 0) newWinner = 'blue';
     }
 
     const updates = {};
@@ -436,8 +462,8 @@ export default function App() {
     updates[`rooms/${roomCode}/lastSound`] = { type: soundType, timestamp: Date.now() };
 
     if (newWinner) {
-        updates[`rooms/${roomCode}/winner`] = newWinner;
-        updates[`rooms/${roomCode}/lastSound`] = { type: 'victoria', timestamp: Date.now() };
+      updates[`rooms/${roomCode}/winner`] = newWinner;
+      updates[`rooms/${roomCode}/lastSound`] = { type: 'victoria', timestamp: Date.now() };
     } else if (card.type !== gameData.turn) {
       const nextTurn = gameData.turn === 'red' ? 'blue' : 'red';
       updates[`rooms/${roomCode}/turn`] = nextTurn;
@@ -450,7 +476,7 @@ export default function App() {
   };
 
   const passTurn = () => {
-     // ... (Tu código de passTurn original se mantiene igual) ...
+    // ... (Tu código de passTurn original se mantiene igual) ...
     const nextTurn = gameData.turn === 'red' ? 'blue' : 'red';
     const updates = { turn: nextTurn, proposedCard: -1 };
     if (gameData.config.hardMode) updates.paused = true;
@@ -471,44 +497,44 @@ export default function App() {
     setTimeout(() => { update(ref(db, `rooms/${roomCode}`), { status: 'active' }); }, 1000);
   };
 
-// --- SYNC FIREBASE ---
+  // --- SYNC FIREBASE ---
   useEffect(() => {
     if (roomCode) {
       const unsubscribe = onValue(ref(db, `rooms/${roomCode}`), (snapshot) => {
         const data = snapshot.val();
         if (data) {
           if (data.status === 'closed') { exitToHome(); return; }
-          
+
           if (data.status === 'reset') {
-             if (view !== 'role_selection') setView('role_selection');
+            if (view !== 'role_selection') setView('role_selection');
           } else if (view === 'loading_room' || view === 'home') {
-             setView('role_selection');
+            setView('role_selection');
           }
 
           // --- LOGICA MOVIDA AQUÍ (SOLUCIÓN DEFINITIVA) ---
           // Detectamos si el turno ha cambiado respecto a lo que teníamos
           if (data.turn && data.turn !== prevTurn.current) {
-             setAreWordsVisible(false); // Reseteamos visibilidad
-             prevTurn.current = data.turn; // Actualizamos referencia
+            setAreWordsVisible(false); // Reseteamos visibilidad
+            prevTurn.current = data.turn; // Actualizamos referencia
           }
           // -----------------------------------------------
 
           setGameData(data);
-          
+
           // ... (el resto del código sigue igual) ...
           const prop = data.proposedCard;
           if (prop !== undefined && prop !== null && prop !== -1) {
-              setSelectedCardIndex(prop);
+            setSelectedCardIndex(prop);
           } else {
-              if (prop === -1) setSelectedCardIndex(null);
-              if (selectedCardIndex !== null && data.board[selectedCardIndex] && data.board[selectedCardIndex].revealed) {
-                  setSelectedCardIndex(null);
-              }
+            if (prop === -1) setSelectedCardIndex(null);
+            if (selectedCardIndex !== null && data.board[selectedCardIndex] && data.board[selectedCardIndex].revealed) {
+              setSelectedCardIndex(null);
+            }
           }
 
           if (data.lastSound && data.lastSound.timestamp > lastSoundTimestamp.current) {
-              playSound(data.lastSound.type);
-              lastSoundTimestamp.current = data.lastSound.timestamp;
+            playSound(data.lastSound.type);
+            lastSoundTimestamp.current = data.lastSound.timestamp;
           }
         }
       });
@@ -519,7 +545,7 @@ export default function App() {
 
   // --- VISTAS ---
   if (view === 'custom_setup') {
-     // ... (Código de custom_setup igual) ...
+    // ... (Código de custom_setup igual) ...
     const handleWordChange = (i, v) => { const n = [...customWordsInput]; n[i] = v; setCustomWordsInput(n); };
     return (
       <div className="min-h-screen bg-slate-900 flex flex-col items-center p-4 text-white">
@@ -575,12 +601,24 @@ export default function App() {
             <button onClick={createRoom} className="w-full bg-slate-200 hover:bg-amber-400 text-black font-black py-4 rounded-xl text-lg shadow-lg active:scale-95">CREAR PARTIDA</button>
             <div className="flex gap-2 border-t border-slate-700 pt-4"><input type="text" placeholder="CÓDIGO" id="codeInput" maxLength={4} className="w-full p-3 rounded-lg text-black bg-slate-200 uppercase font-bold text-center text-lg" /><button onClick={() => joinRoom(document.getElementById('codeInput').value)} className="bg-blue-600 hover:bg-blue-500 font-bold px-6 rounded-lg text-white">ENTRAR</button></div>
             <button onClick={() => setShowRules(true)} className="w-full text-slate-400 text-sm hover:text-white transition underline">Leer Reglas</button>
+
+            {deferredPrompt && (
+              <div className="pt-4 border-t border-slate-700 w-full animate-fadeIn">
+                <button
+                  onClick={handleInstallClick}
+                  className="w-full bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-black py-4 rounded-xl text-lg shadow-lg active:scale-95 flex items-center justify-center gap-2"
+                >
+                  <span className="text-2xl">📱</span> ¡DESCARGA EL JUEGO!
+                </button>
+                <p className="text-center text-xs text-gray-400 mt-2">Instala la app en tu dispositivo para un acceso rápido</p>
+              </div>
+            )}
           </div>
         </div>
       </div>
     );
   }
-  
+
   // ... (El resto de vistas y return se mantienen exactamente igual) ...
   if (view === 'loading_room') return <div className="min-h-screen bg-slate-900 flex items-center justify-center text-amber-500 font-bold animate-pulse">Conectando...</div>;
   if (view === 'role_selection') return (<div className="min-h-screen bg-slate-900 flex flex-col items-center justify-center text-white p-4"><h2 className="text-2xl font-bold mb-8">SALA <span className="text-amber-500">{roomCode}</span></h2><div className="grid gap-6 w-full max-w-md"><button onClick={() => handleRoleSelection('table')} className="bg-slate-700 p-6 rounded-2xl border-2 border-slate-500 flex flex-col items-center hover:bg-slate-600 transition hover:scale-105"><span className="text-4xl">📺</span><span className="font-bold">MODO MESA</span></button><button onClick={() => handleRoleSelection('captain')} className="bg-amber-600 p-6 rounded-2xl border-2 border-amber-400 flex flex-col items-center hover:bg-amber-500 transition hover:scale-105"><span className="text-4xl">🕵️‍♂️</span><span className="font-bold">MODO CAPITÁN</span></button></div></div>);
