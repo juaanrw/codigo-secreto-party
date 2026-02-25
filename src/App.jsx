@@ -265,10 +265,7 @@ const BgSquare = () => {
   return <div className={`w-full h-full rounded-md transition-colors duration-[2000ms] ease-in-out ${color}`} />;
 };
 
-// ... (Asegúrate de mantener Timer, RulesModal, InfoModal, AnimatedBackground arriba) ...
-
-// --- COMPONENTE INTERNO DEL BOTÓN INFO (EXTRAÍDO FUERA DE APP) ---
-// Ahora recibe onInfoClick como prop
+// --- COMPONENTE INTERNO DEL BOTÓN INFO ---
 const InfoBtn = ({ title, desc, onInfoClick }) => (
   <button
     onClick={(e) => { e.stopPropagation(); onInfoClick({ title, desc }); }}
@@ -325,12 +322,24 @@ export default function App() {
     };
   }, [view]);
 
-  // --- PWA INSTALL PROMPT ---
+  // --- instalación PWA ---
+  const [isIOS, setIsIOS] = useState(false);
+  const [showIOSPrompt, setShowIOSPrompt] = useState(false);
+
   useEffect(() => {
+    // Detecta iOS
+    const userAgent = window.navigator.userAgent.toLowerCase();
+    const isIosDevice = /iphone|ipad|ipod/.test(userAgent);
+    const isStandalone = window.navigator.standalone === true || window.matchMedia('(display-mode: standalone)').matches;
+
+    if (isIosDevice && !isStandalone) {
+      setIsIOS(true);
+    }
+
     const handleBeforeInstallPrompt = (e) => {
-      // Prevent the mini-infobar from appearing on mobile
+      // Evita que aparezca la barra de información en el móvil
       e.preventDefault();
-      // Stash the event so it can be triggered later.
+      // Guarda el evento para poder activarlo más tarde.
       setDeferredPrompt(e);
     };
 
@@ -342,6 +351,10 @@ export default function App() {
   }, []);
 
   const handleInstallClick = async () => {
+    if (isIOS) {
+      setShowIOSPrompt(true);
+      return;
+    }
     if (!deferredPrompt) return;
     deferredPrompt.prompt();
     const { outcome } = await deferredPrompt.userChoice;
@@ -350,7 +363,7 @@ export default function App() {
     }
   };
 
-  // --- FULLSCREEN ---
+  // --- Pantalla completa ---
   useEffect(() => {
     const handleFullscreenChange = () => {
       setIsFullscreen(!!document.fullscreenElement);
@@ -370,8 +383,6 @@ export default function App() {
       }
     }
   };
-
-  // (El useEffect de leer URL se ha eliminado porque ya lo hacemos en el useState)
 
   // --- FUNCIONES ---
   const exitToHome = () => {
@@ -409,13 +420,11 @@ export default function App() {
     const upperCode = code.toUpperCase(); setRoomCode(upperCode); updateUrl(upperCode); setView('loading_room');
   };
   const copyLink = async () => {
-    // ... (Tu código de copyLink original se mantiene igual) ...
     const url = `${window.location.origin}${window.location.pathname}?room=${roomCode}`;
     try {
       await navigator.clipboard.writeText(url);
       setLinkCopied(true);
     } catch {
-      // Fallback manual...
       try {
         const textArea = document.createElement("textarea");
         textArea.value = url;
@@ -439,7 +448,6 @@ export default function App() {
   const handleRoleSelection = (role) => setView(role === 'table' ? 'table' : 'captain');
 
   const handleCardClick = (index) => {
-    // ... (Tu código de handleCardClick original se mantiene igual) ...
     if (gameData.winner || gameData.board[index].revealed) return;
     if (view === 'table') {
       const newProposal = gameData.proposedCard === index ? -1 : index;
@@ -455,7 +463,6 @@ export default function App() {
   };
 
   const confirmReveal = () => {
-    // ... (Tu código de confirmReveal original se mantiene igual) ...
     if (selectedCardIndex === null) return;
     const index = selectedCardIndex;
     const currentBoard = [...gameData.board];
@@ -498,7 +505,6 @@ export default function App() {
   };
 
   const passTurn = () => {
-    // ... (Tu código de passTurn original se mantiene igual) ...
     const nextTurn = gameData.turn === 'red' ? 'blue' : 'red';
     const updates = { turn: nextTurn, proposedCard: -1 };
     if (gameData.config.hardMode) updates.paused = true;
@@ -508,7 +514,6 @@ export default function App() {
   };
 
   const newGame = () => {
-    // ... (Tu código de newGame original se mantiene igual) ...
     const startTeam = Math.random() < 0.5 ? 'red' : 'blue';
     const initialChallenge = gameData.config.isParty ? "🎨 Dibujo: ¡Haz un dibujo en la pizarra!" : "🎯 Normal: Di una palabra y un número.";
     set(ref(db, `rooms/${roomCode}`), {
@@ -532,18 +537,14 @@ export default function App() {
           } else if (view === 'loading_room' || view === 'home') {
             setView('role_selection');
           }
-
-          // --- LOGICA MOVIDA AQUÍ (SOLUCIÓN DEFINITIVA) ---
           // Detectamos si el turno ha cambiado respecto a lo que teníamos
           if (data.turn && data.turn !== prevTurn.current) {
             setAreWordsVisible(false); // Reseteamos visibilidad
             prevTurn.current = data.turn; // Actualizamos referencia
           }
-          // -----------------------------------------------
 
           setGameData(data);
 
-          // ... (el resto del código sigue igual) ...
           const prop = data.proposedCard;
           if (prop !== undefined && prop !== null && prop !== -1) {
             setSelectedCardIndex(prop);
@@ -563,11 +564,10 @@ export default function App() {
       return () => unsubscribe();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [roomCode, view]); // Quitamos selectedCardIndex para evitar re-suscripciones innecesarias
+  }, [roomCode, view]);
 
   // --- VISTAS ---
   if (view === 'custom_setup') {
-    // ... (Código de custom_setup igual) ...
     const handleWordChange = (i, v) => { const n = [...customWordsInput]; n[i] = v; setCustomWordsInput(n); };
     return (
       <div className="min-h-screen bg-slate-900 flex flex-col items-center p-4 text-white">
@@ -588,7 +588,6 @@ export default function App() {
       <div className="min-h-screen bg-slate-900 flex flex-col items-center justify-center text-white p-4 relative overflow-hidden">
         <AnimatedBackground />
         {showRules && <RulesModal onClose={() => setShowRules(false)} />}
-        {/* AQUÍ SE RENDERIZA EL MODAL DE INFO */}
         {activeInfo && <InfoModal title={activeInfo.title} text={activeInfo.desc} onClose={() => setActiveInfo(null)} />}
 
         <div className="relative z-10 w-full max-w-sm flex flex-col items-center">
@@ -601,7 +600,6 @@ export default function App() {
 
               <div className="flex items-center justify-between">
                 <label className="flex items-center space-x-3 cursor-pointer"><input type="checkbox" checked={config.isParty} onChange={(e) => setConfig({ ...config, isParty: e.target.checked })} className="w-5 h-5 accent-amber-500" /><span>🎨 Modo Dibujo</span></label>
-                {/* SOLUCIÓN 1: Usar el componente InfoBtn extraído y pasarle onInfoClick */}
                 <InfoBtn title="Modo Dibujo (Pictionary)" desc="El capitán NO puede hablar. Todas las pistas se darán dibujando en la pizarra interactiva." onInfoClick={setActiveInfo} />
               </div>
 
@@ -624,7 +622,7 @@ export default function App() {
             <div className="flex gap-2 border-t border-slate-700 pt-4"><input type="text" placeholder="CÓDIGO" id="codeInput" maxLength={4} className="w-full p-3 rounded-lg text-black bg-slate-200 uppercase font-bold text-center text-lg" /><button onClick={() => joinRoom(document.getElementById('codeInput').value)} className="bg-blue-600 hover:bg-blue-500 font-bold px-6 rounded-lg text-white">ENTRAR</button></div>
             <button onClick={() => setShowRules(true)} className="w-full text-slate-400 text-sm hover:text-white transition underline">Leer Reglas</button>
 
-            {deferredPrompt && (
+            {(deferredPrompt || isIOS) && (
               <div className="pt-4 border-t border-slate-700 w-full animate-fadeIn">
                 <button
                   onClick={handleInstallClick}
@@ -641,7 +639,6 @@ export default function App() {
     );
   }
 
-  // ... (El resto de vistas y return se mantienen exactamente igual) ...
   if (view === 'loading_room') return <div className="min-h-screen bg-slate-900 flex items-center justify-center text-amber-500 font-bold animate-pulse">Conectando...</div>;
   if (view === 'role_selection') return (<div className="min-h-screen bg-slate-900 flex flex-col items-center justify-center text-white p-4"><h2 className="text-2xl font-bold mb-8">SALA <span className="text-amber-500">{roomCode}</span></h2><div className="grid gap-6 w-full max-w-md"><button onClick={() => handleRoleSelection('table')} className="bg-slate-700 p-6 rounded-2xl border-2 border-slate-500 flex flex-col items-center hover:bg-slate-600 transition hover:scale-105"><span className="text-4xl">📺</span><span className="font-bold">MODO MESA</span></button><button onClick={() => handleRoleSelection('captain')} className="bg-amber-600 p-6 rounded-2xl border-2 border-amber-400 flex flex-col items-center hover:bg-amber-500 transition hover:scale-105"><span className="text-4xl">🕵️‍♂️</span><span className="font-bold">MODO CAPITÁN</span></button></div></div>);
   if (!gameData) return <div className="min-h-screen bg-slate-900 flex items-center justify-center text-amber-500">Cargando datos...</div>;
@@ -667,6 +664,38 @@ export default function App() {
     <div className={`min-h-screen ${bgColor} transition-colors duration-700 flex flex-col pb-20`}>
       {showRules && <RulesModal onClose={() => setShowRules(false)} />}
       <DrawingBoard isOpen={showDrawing} onClose={() => setShowDrawing(false)} isCaptain={isCaptain && !privacyShieldActive} roomCode={roomCode} existingImage={gameData.drawing} />
+
+      {/* MODAL IOS INSTRUCCIONES */}
+      {showIOSPrompt && (
+        <div className="fixed inset-0 bg-black/85 z-[100] flex flex-col items-center justify-end p-4 sm:p-6 pb-12 animate-fadeIn" onClick={() => setShowIOSPrompt(false)}>
+          <div className="bg-slate-100 p-6 rounded-3xl w-full max-w-sm flex flex-col gap-4 shadow-2xl animate-slideUp border border-gray-300 relative text-black" onClick={e => e.stopPropagation()}>
+            <button onClick={() => setShowIOSPrompt(false)} className="absolute top-4 right-4 text-gray-400 hover:text-black font-bold text-xl px-2">✕</button>
+
+            <div className="flex flex-col items-center mt-2">
+              <div className="w-16 h-16 bg-gradient-to-br from-gray-800 to-black text-white rounded-2xl flex items-center justify-center text-3xl shadow-lg mb-4">🕵️‍♂️</div>
+              <h3 className="font-bold text-2xl text-center leading-tight">Instala <br /><span className="text-blue-600">Código Secreto</span></h3>
+              <p className="text-center text-gray-500 mt-2 text-sm">Añade esta web a tu pantalla de inicio para jugar a pantalla completa y sin interrupciones.</p>
+            </div>
+
+            <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 mt-2 text-sm text-gray-700 space-y-4">
+              <div className="flex items-center gap-4">
+                <div className="text-blue-500 w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center text-xl shrink-0">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5"><path d="M12 2.25a.75.75 0 0 1 .75.75v11.69l3.22-3.22a.75.75 0 1 1 1.06 1.06l-4.5 4.5a.75.75 0 0 1-1.06 0l-4.5-4.5a.75.75 0 1 1 1.06-1.06l3.22 3.22V3a.75.75 0 0 1 .75-.75Zm-9 13.5a.75.75 0 0 1 .75.75v2.25a1.5 1.5 0 0 0 1.5 1.5h13.5a1.5 1.5 0 0 0 1.5-1.5V16.5a.75.75 0 0 1 1.5 0v2.25a3 3 0 0 1-3 3H5.25a3 3 0 0 1-3-3V16.5a.75.75 0 0 1 .75-.75Z" /></svg>
+                </div>
+                <p>1. Toca en el botón de <b>Compartir</b> de tu navegador (está en la barra inferior o superior).</p>
+              </div>
+              <div className="flex items-center gap-4">
+                <div className="text-gray-900 w-8 h-8 rounded-xl bg-gray-100 flex items-center justify-center shrink-0 border border-gray-200">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5"><path fillRule="evenodd" d="M12 3.75a.75.75 0 0 1 .75.75v6.75h6.75a.75.75 0 0 1 0 1.5h-6.75v6.75a.75.75 0 0 1-1.5 0v-6.75H4.5a.75.75 0 0 1 0-1.5h6.75V4.5a.75.75 0 0 1 .75-.75Z" clipRule="evenodd" /></svg>
+                </div>
+                <p>2. Desplázate hacia abajo y selecciona <b>Añadir a la pantalla de inicio</b>.</p>
+              </div>
+            </div>
+
+            <button onClick={() => setShowIOSPrompt(false)} className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-xl shadow-md transition-colors mt-2 active:scale-95">¡Entendido!</button>
+          </div>
+        </div>
+      )}
 
       <div className="bg-slate-900/90 backdrop-blur text-white p-2 shadow-lg flex justify-between items-center sticky top-0 z-30">
         <div className="flex gap-4 items-center">
