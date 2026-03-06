@@ -7,7 +7,8 @@ const HomeView = ({
     config, setConfig,
     showRules, setShowRules,
     activeInfo, setActiveInfo,
-    createRoom, joinRoom
+    createRoom, joinRoom,
+    isIOS, deferredPrompt, handleInstallClick
 }) => {
     const [codeInput, setCodeInput] = useState('');
 
@@ -51,6 +52,18 @@ const HomeView = ({
                         <button onClick={() => joinRoom(codeInput)} className="bg-blue-600 hover:bg-blue-500 font-bold px-6 rounded-lg text-white">ENTRAR</button>
                     </div>
                     <button onClick={() => setShowRules(true)} className="w-full text-slate-400 text-sm hover:text-white transition underline">Leer Reglas</button>
+
+                    {(deferredPrompt || isIOS) && (
+                        <div className="pt-4 border-t border-slate-700 w-full animate-fadeIn">
+                            <button
+                                onClick={handleInstallClick}
+                                className="w-full bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-black py-4 rounded-xl text-lg shadow-lg active:scale-95 flex items-center justify-center gap-2"
+                            >
+                                <span className="text-2xl">📱</span> ¡DESCARGA EL JUEGO!
+                            </button>
+                            <p className="text-center text-xs text-gray-400 mt-2">Instala la app en tu dispositivo para un acceso rápido</p>
+                        </div>
+                    )}
                 </div>
             </div>
         </div>
