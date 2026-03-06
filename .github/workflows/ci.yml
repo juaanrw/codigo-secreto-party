@@ -1,0 +1,32 @@
+name: CI - Calidad del Código
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  build-and-test:
+    name: Build, Lint & Test
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout del código
+      uses: actions/checkout@v4
+
+    - name: Configurar Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '24'
+        cache: 'npm'
+
+    - name: Instalar dependencias
+      run: npm ci
+
+    - name: Ejecutar Linter (ESLint)
+      run: npm run lint
+      continue-on-error: false 
+
+    - name: Ejecutar Tests Unitarios
+      run: npx vitest run --coverage
