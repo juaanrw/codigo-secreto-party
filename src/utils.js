@@ -1,4 +1,7 @@
-const shuffle = (array) => {
+import { ref, get, remove } from "firebase/database";
+import { db } from './firebase';
+
+export const shuffle = (array) => {
   let currentIndex = array.length, randomIndex;
   while (currentIndex !== 0) {
     randomIndex = Math.floor(Math.random() * currentIndex);
@@ -104,7 +107,35 @@ export const generateBoard = (startingTeam = 'red', customWords = null) => {
   return selectedWords.map((word, index) => ({
     id: index,
     word,
-    type: shuffledRoles[index], 
+    type: shuffledRoles[index],
     revealed: false
   }));
+};
+
+// --- LIMPIEZA DE SALAS VIEJAS (>24H) ---
+export const cleanupOldRooms = async () => {
+  try {
+    const roomsRef = ref(db, 'rooms');
+    const snapshot = await get(roomsRef);
+    if (snapshot.exists()) {
+      const rooms = snapshot.val();
+      const now = Date.now();
+      const ONE_DAY = 24 * 60 * 60 * 1000;
+
+      for (const [key, room] of Object.entries(rooms)) {
+        if (room.turnTimestamp && (now - room.turnTimestamp > ONE_DAY)) {
+          remove(ref(db, `rooms/${key}`));
+        }
+      }
+    }
+  } catch (error) {
+    console.error("Error limpiando salas:", error);
+  }
+};
+
+// --- SISTEMA DE SONIDO ---
+export const playSound = (type) => {
+  const audio = new Audio(`/sounds/${type}.mp3`);
+  audio.volume = 0.5;
+  audio.play().catch(e => console.log("Audio play failed", e));
 };
