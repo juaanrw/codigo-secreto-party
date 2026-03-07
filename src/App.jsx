@@ -22,6 +22,7 @@ export default function App() {
   const [selectedCardIndex, setSelectedCardIndex] = useState(null);
   const [areWordsVisible, setAreWordsVisible] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
+  const [connectionTimeout, setConnectionTimeout] = useState(false);
 
   const [isIOS, setIsIOS] = useState(false);
   const [showIOSPrompt, setShowIOSPrompt] = useState(false);
@@ -144,6 +145,19 @@ export default function App() {
       return () => unsubscribe();
     }
   }, [roomCode, view, selectedCardIndex]);
+
+  useEffect(() => {
+    let timeoutId;
+    if (view === 'loading_room') {
+      setConnectionTimeout(false);
+      timeoutId = setTimeout(() => {
+        setConnectionTimeout(true);
+      }, 10000);
+    }
+    return () => {
+      if (timeoutId) clearTimeout(timeoutId);
+    };
+  }, [view]);
 
   useEffect(() => {
     if (gameData?.turn) setAreWordsVisible(false);
@@ -309,8 +323,32 @@ export default function App() {
       return <HomeView config={config} setConfig={setConfig} showRules={showRules} setShowRules={setShowRules} activeInfo={activeInfo} setActiveInfo={setActiveInfo} createRoom={createRoom} joinRoom={joinRoom} isIOS={isIOS} deferredPrompt={deferredPrompt} handleInstallClick={handleInstallClick} />;
     }
 
-    if (view === 'loading_room') return <div className="min-h-screen bg-slate-900 flex items-center justify-center text-amber-500 font-bold animate-pulse">Conectando...</div>;
-    if (view === 'role_selection') return <RoleSelectionView roomCode={roomCode} handleRoleSelection={handleRoleSelection} />;
+    if (view === 'loading_room') {
+      return (
+        <div className="min-h-screen bg-slate-900 flex flex-col items-center justify-center relative p-4 text-center">
+          <div className="absolute top-4 left-4 z-50">
+            <button onClick={exitToHome} className="bg-slate-700 p-2 rounded-lg text-xl hover:bg-slate-600 transition shadow-lg border border-slate-500 text-white">🏠 Volver</button>
+          </div>
+
+          {!connectionTimeout ? (
+            <div className="text-amber-500 font-bold animate-pulse text-2xl">Conectando...</div>
+          ) : (
+            <div className="flex flex-col items-center gap-6 animate-fadeIn max-w-sm">
+              <div className="text-6xl mb-2">📡</div>
+              <h2 className="text-2xl font-black text-white">No se ha encontrado la sala</h2>
+              <p className="text-gray-400">Puede que el código <span className="text-amber-500 font-bold">{roomCode}</span> no sea correcto o la sala ya no exista.</p>
+
+              <div className="flex flex-col gap-3 w-full mt-4">
+                <button onClick={exitToHome} className="bg-slate-700 hover:bg-slate-600 text-white font-bold py-4 px-6 rounded-xl shadow-lg border border-slate-500">
+                  🏠 Volver a Inicio
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      );
+    }
+    if (view === 'role_selection') return <RoleSelectionView roomCode={roomCode} handleRoleSelection={handleRoleSelection} exitToHome={exitToHome} />;
     if (!gameData) return <div className="min-h-screen bg-slate-900 flex items-center justify-center text-amber-500">Cargando datos...</div>;
 
     const isCaptain = view === 'captain';
