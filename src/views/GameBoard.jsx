@@ -28,7 +28,7 @@ const GameBoard = ({
     const isDrawingChallenge = gameData.challenge?.includes("Dibujo");
 
     return (
-        <div className={`min-h-screen ${bgColor} transition-colors duration-700 flex flex-col pb-20`}>
+        <div className={`h-[100dvh] w-full overflow-hidden ${bgColor} transition-colors duration-700 flex flex-col pb-20 md:pb-24`}>
             {showRules && <RulesModal onClose={() => setShowRules(false)} />}
             <DrawingBoard isOpen={showDrawing} onClose={() => setShowDrawing(false)} isCaptain={isCaptain && !privacyShieldActive} roomCode={roomCode} existingImage={gameData.drawing} />
 
@@ -60,7 +60,7 @@ const GameBoard = ({
                 </div>
             </div>
 
-            <div className="flex-1 p-2 md:p-6 w-full max-w-5xl mx-auto relative">
+            <div className="flex-1 p-2 md:p-6 w-full max-w-5xl mx-auto relative flex flex-col min-h-0">
                 {privacyShieldActive && !gameData.winner && (
                     <div className="absolute inset-0 z-40 bg-slate-800 flex flex-col items-center justify-center p-6 text-center rounded-lg m-2 border-4 border-slate-600">
                         <h2 className="text-3xl font-black text-white mb-2">ALTO AHÍ</h2><p className="text-gray-400 mb-8">Pasa el dispositivo al Capitán:</p><div className={`text-4xl font-black mb-10 ${isRedTurn ? 'text-red-500' : 'text-blue-500'} uppercase animate-pulse`}>{isRedTurn ? 'ROJO 🔴' : 'AZUL 🔵'}</div>
@@ -70,7 +70,7 @@ const GameBoard = ({
                 {gameData.config.isParty && (
                     <div className="bg-slate-200 text-black p-3 text-center font-bold rounded-lg shadow-lg mb-4 mx-auto max-w-md flex flex-col"><span className="text-sm uppercase opacity-70">RETO:</span><span className="text-lg">{gameData.challenge}</span>{isDrawingChallenge && <span className="text-xs mt-1 bg-black/10 rounded px-2">Pulsa 🎨 arriba para dibujar</span>}</div>
                 )}
-                <div className="grid grid-cols-5 gap-2 md:gap-4 content-start">
+                <div className="grid grid-cols-5 grid-rows-5 gap-1 sm:gap-2 md:gap-4 flex-1 min-h-0">
                     {gameData.board.map((card, i) => (
                         <Card key={i} data={card} viewMode={cardViewMode} isSelected={selectedCardIndex === i} isProposed={gameData.proposedCard === i} onClick={() => !privacyShieldActive ? handleCardClick(i) : null} />
                     ))}

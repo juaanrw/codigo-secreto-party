@@ -17,7 +17,7 @@ const Card = ({ data, viewMode, onClick, isSelected, isProposed }) => {
     else if (viewMode === 'captain_red') displayType = (isRevealed || data.type === 'red') ? data.type : 'unknown';
     else if (viewMode === 'captain_blue') displayType = (isRevealed || data.type === 'blue') ? data.type : 'unknown';
 
-    let baseClass = `w-full h-20 md:h-28 lg:h-32 rounded-lg flex items-center justify-center font-bold text-sm md:text-xl select-none transition-all shadow-md p-1 text-center break-words leading-tight border-b-4 active:border-b-0 active:translate-y-1 relative`;
+    let baseClass = `w-full h-full min-h-0 rounded-lg flex items-center justify-center font-bold text-xs sm:text-sm md:text-xl lg:text-2xl select-none transition-all shadow-md p-0.5 sm:p-1 md:p-2 text-center break-words leading-tight sm:leading-none border-b-4 active:border-b-0 active:translate-y-1 relative`;
 
     const selectionClass = isSelected ? "ring-4 ring-yellow-400 scale-105 z-20" : "";
     const revealedClass = isRevealed ? "opacity-90 ring-4 ring-black/30 border-b-0 translate-y-1 saturate-150" : "cursor-pointer hover:scale-105";
