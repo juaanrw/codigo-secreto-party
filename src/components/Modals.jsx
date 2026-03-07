@@ -61,3 +61,39 @@ export const RulesModal = ({ onClose }) => (
         </div>
     </div>
 );
+
+export const DrawingGalleryModal = ({ drawings, onClose, roomCode }) => {
+    if (!drawings || drawings.length === 0) return null;
+
+    return (
+        <div className="fixed inset-0 bg-black/90 z-[100] flex flex-col items-center justify-center p-4 animate-fadeIn" onClick={onClose}>
+            <div className="bg-slate-800 p-6 rounded-xl w-full max-w-4xl flex flex-col gap-4 shadow-2xl relative max-h-[90vh]" onClick={e => e.stopPropagation()}>
+                <button onClick={onClose} className="absolute top-2 right-2 text-white hover:text-red-500 font-bold text-2xl px-2">✕</button>
+                <div className="flex justify-between items-center sm:px-4 mt-2">
+                    <h3 className="text-white font-black text-2xl sm:text-3xl uppercase">🖼️ Galería de Dibujos</h3>
+                </div>
+
+                <div className="overflow-y-auto w-full p-2 bg-slate-900 rounded-lg border border-slate-700">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 auto-rows-max">
+                        {drawings.map((imgSrc, index) => (
+                            <div key={index} className="bg-white p-2 rounded-lg flex flex-col items-center gap-2 shadow-lg relative group">
+                                <span className="absolute -top-3 -left-3 bg-amber-500 text-black font-black w-8 h-8 flex items-center justify-center rounded-full shadow border-2 border-white">{index + 1}</span>
+                                <div className="border-2 border-black w-full h-48 bg-white flex items-center justify-center overflow-hidden rounded">
+                                    <img src={imgSrc} alt={`Dibujo ${index + 1}`} className="w-full h-full object-contain" />
+                                </div>
+                                <button onClick={() => {
+                                    const a = document.createElement('a');
+                                    a.href = imgSrc;
+                                    a.download = `dibujo-cs-${roomCode}-${index + 1}.png`;
+                                    a.click();
+                                }} className="bg-slate-800 hover:bg-slate-700 text-white font-bold py-2 px-4 rounded w-full text-sm transition flex justify-center items-center gap-2">
+                                    💾 Descargar
+                                </button>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+};

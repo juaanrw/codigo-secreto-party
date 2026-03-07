@@ -175,7 +175,7 @@ export default function App() {
       board: generateBoard(startTeam, customWords),
       turn: startTeam, challenge: initialChallenge, config: { ...config },
       turnTimestamp: Date.now(), paused: config.hardMode ? true : false,
-      drawing: null, proposedCard: null, status: 'active'
+      drawing: null, drawings: [], proposedCard: null, status: 'active'
     });
     setView('role_selection');
   };
@@ -295,7 +295,7 @@ export default function App() {
     set(ref(db, `rooms/${roomCode}`), {
       board: generateBoard(startTeam), turn: startTeam, winner: null,
       challenge: initialChallenge, config: gameData.config,
-      turnTimestamp: Date.now(), paused: gameData.config.hardMode, drawing: null, proposedCard: null, status: 'reset'
+      turnTimestamp: Date.now(), paused: gameData.config.hardMode, drawing: null, drawings: [], proposedCard: null, status: 'reset'
     });
     setTimeout(() => { update(ref(db, `rooms/${roomCode}`), { status: 'active' }); }, 1000);
   };

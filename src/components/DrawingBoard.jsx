@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { db } from '../firebase';
-import { ref, update } from "firebase/database";
+import { ref, update, get } from "firebase/database";
 
 const DrawingBoard = ({ isOpen, onClose, isCaptain, roomCode, existingImage }) => {
     const canvasRef = useRef(null);
@@ -47,7 +47,32 @@ const DrawingBoard = ({ isOpen, onClose, isCaptain, roomCode, existingImage }) =
     const finishDrawing = () => {
         setCanDraw(false);
         setSessionFinished(true);
-        saveToFirebase();
+        saveDrawingFinal();
+    };
+
+    const saveDrawingFinal = async () => {
+        if (!canvasRef.current) return;
+        const dataUrl = canvasRef.current.toDataURL("image/png");
+
+        try {
+            const roomRef = ref(db, `rooms/${roomCode}`);
+            const snapshot = await get(roomRef);
+            if (snapshot.exists()) {
+                const roomData = snapshot.val();
+                let newDrawings = Array.isArray(roomData.drawings) ? [...roomData.drawings] : [];
+                newDrawings.push(dataUrl);
+
+                await update(roomRef, {
+                    drawing: dataUrl,
+                    drawings: newDrawings
+                });
+            } else {
+                await update(roomRef, { drawing: dataUrl });
+            }
+        } catch (error) {
+            console.error("Error saving drawing to Firebase:", error);
+            update(ref(db, `rooms/${roomCode}`), { drawing: dataUrl });
+        }
     };
 
     const saveToFirebase = () => {
@@ -96,8 +121,28 @@ const DrawingBoard = ({ isOpen, onClose, isCaptain, roomCode, existingImage }) =
                 {isCaptain ? (
                     !sessionFinished && !canDraw ? <button onClick={startDrawingSession} className="w-full bg-slate-200 text-black font-bold py-3 rounded-lg hover:scale-105 transition">✏️ EMPEZAR DIBUJO (10s)</button> :
                         canDraw ? <div className="w-full bg-gray-200 rounded-full h-6 overflow-hidden border border-gray-400 relative"><div className="bg-red-500 h-full transition-all duration-1000 ease-linear" style={{ width: `${(timeLeft / 10) * 100}%` }}></div><div className="absolute inset-x-0 text-center text-xs font-bold text-black leading-6 z-10">TIEMPO: {timeLeft}s</div></div> :
-                            <div className="text-center text-sm font-bold text-gray-500 bg-gray-200 p-2 rounded">DIBUJO FINALIZADO</div>
-                ) : <p className="text-center text-sm text-gray-500">Solo el capitán actual puede dibujar.</p>}
+                            <div className="flex gap-2 w-full">
+                                <div className="flex-1 text-center text-sm font-bold text-gray-500 bg-gray-200 p-2 rounded flex items-center justify-center">FINALIZADO</div>
+                                <button onClick={() => {
+                                    const a = document.createElement('a');
+                                    a.href = localImage;
+                                    a.download = `dibujo-cs-${roomCode}.png`;
+                                    a.click();
+                                }} className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded text-sm transition flex items-center gap-1 shadow">💾 <span className="hidden sm:inline">Descargar</span></button>
+                            </div>
+                ) : (
+                    sessionFinished || (existingImage && !canDraw && timeLeft === 10) ? (
+                        <div className="flex gap-2 w-full mt-2">
+                            <div className="flex-1 text-center text-sm font-bold text-gray-500 bg-gray-200 p-2 rounded flex items-center justify-center">DIBUJO FINALIZADO</div>
+                            {localImage && <button onClick={() => {
+                                const a = document.createElement('a');
+                                a.href = localImage;
+                                a.download = `dibujo-cs-${roomCode}.png`;
+                                a.click();
+                            }} className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded text-sm transition flex items-center gap-1 shadow">💾 <span className="hidden sm:inline">Descargar</span></button>}
+                        </div>
+                    ) : <p className="text-center text-sm text-gray-500">Solo el capitán actual puede dibujar.</p>
+                )}
             </div>
         </div>
     );

@@ -2,7 +2,7 @@ import React from 'react';
 import Card from '../components/Card';
 import Timer from '../components/Timer';
 import DrawingBoard from '../components/DrawingBoard';
-import { RulesModal } from '../components/Modals';
+import { RulesModal, DrawingGalleryModal } from '../components/Modals';
 
 const GameBoard = ({
     gameData, roomCode, view, isCaptain, privacyShieldActive,
@@ -12,6 +12,8 @@ const GameBoard = ({
     confirmReveal, passTurn, newGame, goHomeFinal,
     handleCardClick
 }) => {
+    const [showGallery, setShowGallery] = React.useState(false);
+
     const redLeft = gameData.board.filter(c => c.type === 'red' && !c.revealed).length;
     const blueLeft = gameData.board.filter(c => c.type === 'blue' && !c.revealed).length;
     const isRedTurn = gameData.turn === 'red';
@@ -30,6 +32,7 @@ const GameBoard = ({
     return (
         <div className={`h-[100dvh] w-full overflow-hidden ${bgColor} transition-colors duration-700 flex flex-col pb-20 md:pb-24`}>
             {showRules && <RulesModal onClose={() => setShowRules(false)} />}
+            {showGallery && gameData.drawings && <DrawingGalleryModal drawings={gameData.drawings} onClose={() => setShowGallery(false)} roomCode={roomCode} />}
             <DrawingBoard isOpen={showDrawing} onClose={() => setShowDrawing(false)} isCaptain={isCaptain && !privacyShieldActive} roomCode={roomCode} existingImage={gameData.drawing} />
 
             <div className="bg-slate-900/90 backdrop-blur text-white p-2 shadow-lg flex justify-between items-center sticky top-0 z-30">
@@ -93,9 +96,22 @@ const GameBoard = ({
 
             {gameData.winner && (
                 <div className="fixed bottom-0 left-0 right-0 z-[100] animate-slideUp">
-                    <div className="bg-slate-900/95 border-t-4 border-amber-500 rounded-t-3xl p-6 shadow-2xl flex flex-col md:flex-row items-center justify-between gap-6 max-w-5xl mx-auto">
-                        <div className="text-center md:text-left"><p className="text-gray-400 text-sm font-bold uppercase tracking-widest mb-1">PARTIDA FINALIZADA</p><h2 className={`text-4xl md:text-5xl font-black ${gameData.winner === 'red' ? 'text-red-500' : 'text-blue-500'}`}>¡GANA EL {gameData.winner === 'red' ? 'ROJO' : 'AZUL'}!</h2></div>
-                        <div className="flex gap-4 w-full md:w-auto"><button onClick={goHomeFinal} className="flex-1 md:flex-none bg-slate-700 hover:bg-slate-600 text-white font-bold py-3 px-6 rounded-xl transition">🏠 SALIR</button><button onClick={newGame} className="flex-1 md:flex-none bg-white hover:scale-105 text-black font-black py-3 px-8 rounded-xl shadow-lg transition animate-pulse">JUGAR OTRA VEZ ↻</button></div>
+                    <div className="bg-slate-900/95 border-t-4 border-amber-500 rounded-t-3xl p-6 shadow-2xl flex flex-col items-center justify-center gap-6 max-w-5xl mx-auto">
+                        <div className="text-center w-full flex flex-col md:flex-row items-center justify-between gap-4">
+                            <div>
+                                <p className="text-gray-400 text-sm font-bold uppercase tracking-widest mb-1">PARTIDA FINALIZADA</p>
+                                <h2 className={`text-4xl md:text-5xl font-black ${gameData.winner === 'red' ? 'text-red-500' : 'text-blue-500'}`}>¡GANA EL {gameData.winner === 'red' ? 'ROJO' : 'AZUL'}!</h2>
+                            </div>
+                            {gameData.drawings && gameData.drawings.length > 0 && (
+                                <button onClick={() => setShowGallery(true)} className="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-white font-black py-3 px-6 rounded-xl shadow-lg transition transform hover:scale-105 flex items-center gap-2 border border-amber-400">
+                                    🖼️ Ver Galería de Dibujos ({gameData.drawings.length})
+                                </button>
+                            )}
+                        </div>
+                        <div className="flex flex-col md:flex-row gap-4 w-full">
+                            <button onClick={goHomeFinal} className="flex-1 bg-slate-700 hover:bg-slate-600 text-white font-bold py-3 px-6 rounded-xl transition">🏠 SALIR</button>
+                            <button onClick={newGame} className="flex-1 bg-white hover:scale-105 text-black font-black py-3 px-8 rounded-xl shadow-lg transition animate-pulse">JUGAR OTRA VEZ ↻</button>
+                        </div>
                     </div>
                 </div>
             )}
