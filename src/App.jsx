@@ -51,12 +51,9 @@ export default function App() {
   useEffect(() => {
     const userAgent = window.navigator.userAgent.toLowerCase();
     if (/iphone|ipad|ipod/.test(userAgent) && !window.navigator.standalone) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setIsIOS(true);
     }
-    const handler = (e) => {
-      e.preventDefault();
-      setDeferredPrompt(e);
-    };
   }, []);
 
   const handleInstallClick = async () => {
@@ -105,8 +102,14 @@ export default function App() {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const roomParam = params.get('room');
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (roomParam) setRoomCode(roomParam.toUpperCase());
   }, []);
+
+  const exitToHome = () => {
+    setRoomCode(''); setGameData(null); setView('home');
+    window.history.pushState({}, '', window.location.pathname);
+  };
 
   useEffect(() => {
     if (roomCode) {
@@ -141,6 +144,7 @@ export default function App() {
             lastSoundTimestamp.current = data.lastSound.timestamp;
           }
         }
+         
       });
       return () => unsubscribe();
     }
@@ -149,6 +153,7 @@ export default function App() {
   useEffect(() => {
     let timeoutId;
     if (view === 'loading_room') {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setConnectionTimeout(false);
       timeoutId = setTimeout(() => {
         setConnectionTimeout(true);
@@ -160,13 +165,10 @@ export default function App() {
   }, [view]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (gameData?.turn) setAreWordsVisible(false);
   }, [gameData?.turn]);
 
-  const exitToHome = () => {
-    setRoomCode(''); setGameData(null); setView('home');
-    window.history.pushState({}, '', window.location.pathname);
-  };
   const updateUrl = (code) => {
     const newUrl = `${window.location.pathname}?room=${code}`;
     window.history.pushState({}, '', newUrl);
@@ -202,7 +204,7 @@ export default function App() {
     try {
       await navigator.clipboard.writeText(url);
       setLinkCopied(true);
-    } catch (err) {
+    } catch {
       try {
         const textArea = document.createElement("textarea");
         textArea.value = url;
@@ -219,7 +221,7 @@ export default function App() {
         } else {
           alert("Copia este enlace manualmente: " + url);
         }
-      } catch (e) {
+      } catch {
         alert("Copia este enlace manualmente: " + url);
       }
     }

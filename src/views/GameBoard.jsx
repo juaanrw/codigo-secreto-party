@@ -5,7 +5,7 @@ import DrawingBoard from '../components/DrawingBoard';
 import { RulesModal, DrawingGalleryModal } from '../components/Modals';
 
 const GameBoard = ({
-    gameData, roomCode, view, isCaptain, privacyShieldActive,
+    gameData, roomCode, isCaptain, privacyShieldActive,
     areWordsVisible, selectedCardIndex,
     showRules, setShowRules, showDrawing, setShowDrawing,
     goHome, copyLink, linkCopied, activateHardModeTurn,

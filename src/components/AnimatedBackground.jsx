@@ -1,11 +1,17 @@
 import React, { useState, useEffect } from 'react';
 
 const BgSquare = () => {
+     
     const colors = ["bg-amber-200", "bg-amber-200", "bg-amber-200", "bg-red-600", "bg-blue-600", "bg-gray-900"];
+     
     const [color, setColor] = useState(colors[Math.floor(Math.random() * colors.length)]);
     useEffect(() => {
-        const interval = setInterval(() => { setColor(colors[Math.floor(Math.random() * colors.length)]); }, 2000 + Math.random() * 4000);
+        const interval = setInterval(() => {
+             
+            setColor(colors[Math.floor(Math.random() * colors.length)]);
+        }, 2000 + Math.random() * 4000);
         return () => clearInterval(interval);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
     return <div className={`w-full h-full rounded-md transition-colors duration-[2000ms] ease-in-out ${color}`} />;
 };

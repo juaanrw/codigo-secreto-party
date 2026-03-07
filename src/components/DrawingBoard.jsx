@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { db } from '../firebase';
-import { ref, update, get } from "firebase/database";
+import { ref, update } from "firebase/database";
 
 const DrawingBoard = ({ isOpen, onClose, isCaptain, roomCode, existingImage }) => {
     const canvasRef = useRef(null);
@@ -26,8 +26,20 @@ const DrawingBoard = ({ isOpen, onClose, isCaptain, roomCode, existingImage }) =
         let interval;
         if (isCaptain && canDraw && timeLeft > 0) {
             interval = setInterval(() => setTimeLeft(prev => prev - 1), 1000);
-        } else if (timeLeft === 0 && canDraw) finishDrawing();
+        } else if (timeLeft === 0 && canDraw) {
+            // Logic manually moved from finishDrawing since it depends on state.
+            // Using a simple timeout to wait for the final draw events before saving.
+            setTimeout(() => {
+                setCanDraw(false);
+                setSessionFinished(true);
+                // Call saveToFirebase (it does the same as saveDrawingFinal in a simpler way, and we avoid the complex async logic inside useEffect)
+                if (canvasRef.current) {
+                    saveToFirebase();
+                }
+            }, 0);
+        }
         return () => clearInterval(interval);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [canDraw, timeLeft, isCaptain]);
 
     const startDrawingSession = () => {
@@ -42,37 +54,6 @@ const DrawingBoard = ({ isOpen, onClose, isCaptain, roomCode, existingImage }) =
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
             }
         }, 50);
-    };
-
-    const finishDrawing = () => {
-        setCanDraw(false);
-        setSessionFinished(true);
-        saveDrawingFinal();
-    };
-
-    const saveDrawingFinal = async () => {
-        if (!canvasRef.current) return;
-        const dataUrl = canvasRef.current.toDataURL("image/png");
-
-        try {
-            const roomRef = ref(db, `rooms/${roomCode}`);
-            const snapshot = await get(roomRef);
-            if (snapshot.exists()) {
-                const roomData = snapshot.val();
-                let newDrawings = Array.isArray(roomData.drawings) ? [...roomData.drawings] : [];
-                newDrawings.push(dataUrl);
-
-                await update(roomRef, {
-                    drawing: dataUrl,
-                    drawings: newDrawings
-                });
-            } else {
-                await update(roomRef, { drawing: dataUrl });
-            }
-        } catch (error) {
-            console.error("Error saving drawing to Firebase:", error);
-            update(ref(db, `rooms/${roomCode}`), { drawing: dataUrl });
-        }
     };
 
     const saveToFirebase = () => {
