@@ -56,8 +56,6 @@ export default function App() {
       e.preventDefault();
       setDeferredPrompt(e);
     };
-    window.addEventListener('beforeinstallprompt', handler);
-    return () => window.removeEventListener('beforeinstallprompt', handler);
   }, []);
 
   const handleInstallClick = async () => {
@@ -74,18 +72,32 @@ export default function App() {
   };
 
   useEffect(() => {
-    const handleFullscreenChange = () => setIsFullscreen(!!document.fullscreenElement);
+    const handleFullscreenChange = () => setIsFullscreen(!!(document.fullscreenElement || document.webkitFullscreenElement));
     document.addEventListener('fullscreenchange', handleFullscreenChange);
-    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+    document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+      document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
+    };
   }, []);
 
   const toggleFullscreen = () => {
-    if (!document.fullscreenElement) {
-      document.documentElement.requestFullscreen().catch((err) => {
-        console.error(`Error intentando pantalla completa: ${err.message} (${err.name})`);
-      });
-    } else if (document.exitFullscreen) {
-      document.exitFullscreen();
+    const docEl = document.documentElement;
+    const isFull = document.fullscreenElement || document.webkitFullscreenElement;
+    if (!isFull) {
+      if (docEl.requestFullscreen) {
+        docEl.requestFullscreen().catch((err) => {
+          console.error(`Error intentando pantalla completa: ${err.message} (${err.name})`);
+        });
+      } else if (docEl.webkitRequestFullscreen) {
+        docEl.webkitRequestFullscreen();
+      }
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+      } else if (document.webkitExitFullscreen) {
+        document.webkitExitFullscreen();
+      }
     }
   };
 
@@ -212,8 +224,6 @@ export default function App() {
     if (view === 'table') {
       const newProposal = gameData.proposedCard === index ? -1 : index;
       update(ref(db, `rooms/${roomCode}`), { proposedCard: newProposal });
-    } else {
-      setSelectedCardIndex(index === selectedCardIndex ? null : index);
     }
   };
   const activateHardModeTurn = () => {
@@ -221,8 +231,15 @@ export default function App() {
     update(ref(db, `rooms/${roomCode}`), { paused: false, turnTimestamp: Date.now() });
   };
   const confirmReveal = () => {
-    if (selectedCardIndex === null) return;
-    const index = selectedCardIndex;
+    let index = null;
+    if (gameData.proposedCard !== undefined && gameData.proposedCard !== null && gameData.proposedCard !== -1) {
+      index = gameData.proposedCard;
+    } else if (selectedCardIndex !== null) {
+      index = selectedCardIndex;
+    }
+
+    if (index === null) return;
+
     const currentBoard = [...gameData.board];
     const card = currentBoard[index];
 
@@ -352,21 +369,23 @@ export default function App() {
 
       {renderView()}
 
-      <button
-        onClick={toggleFullscreen}
-        className="fixed bottom-4 right-4 z-50 bg-black/50 hover:bg-black/80 text-white p-3 rounded-full shadow-lg backdrop-blur transition border border-white/20 active:scale-90"
-        title="Pantalla Completa"
-      >
-        {isFullscreen ? (
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M9 9V4.5M9 9H4.5M15 9V4.5M15 9h4.5M9 15v4.5M9 15H4.5M15 15v4.5M15 15h4.5" />
-          </svg>
-        ) : (
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15" />
-          </svg>
-        )}
-      </button>
+      {!isIOS && (
+        <button
+          onClick={toggleFullscreen}
+          className="fixed bottom-4 right-4 z-50 bg-black/50 hover:bg-black/80 text-white p-3 rounded-full shadow-lg backdrop-blur transition border border-white/20 active:scale-90"
+          title="Pantalla Completa"
+        >
+          {isFullscreen ? (
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 9V4.5M9 9H4.5M15 9V4.5M15 9h4.5M9 15v4.5M9 15H4.5M15 15v4.5M15 15h4.5" />
+            </svg>
+          ) : (
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15" />
+            </svg>
+          )}
+        </button>
+      )}
     </>
   );
 }

@@ -79,9 +79,9 @@ const GameBoard = ({
 
             {isCaptain && (
                 <div className="fixed bottom-0 w-full p-4 bg-gradient-to-t from-black via-black/95 to-transparent flex flex-col gap-2 z-40">
-                    {selectedCardIndex !== null && gameData.board[selectedCardIndex] && !gameData.winner && (
+                    {gameData.proposedCard !== null && gameData.proposedCard !== -1 && gameData.board[gameData.proposedCard] && !gameData.winner && (
                         <button onClick={confirmReveal} className="w-full bg-yellow-400 hover:bg-yellow-300 text-black font-black py-3 rounded-xl shadow-lg active:scale-95 text-lg animate-bounce-short">
-                            👆 REVELAR "{gameData.board[selectedCardIndex].word}"
+                            👆 REVELAR "{gameData.board[gameData.proposedCard].word}"
                         </button>
                     )}
                     <div className="flex gap-3">
