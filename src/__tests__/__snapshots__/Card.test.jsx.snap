@@ -3,7 +3,7 @@
 exports[`Componente <Card /> > Coincide con el snapshot (No ha cambiado visualmente) 1`] = `
 <div>
   <div
-    class="w-full h-20 md:h-28 lg:h-32 rounded-lg flex items-center justify-center font-bold text-sm md:text-xl select-none transition-all shadow-md p-1 text-center break-words leading-tight border-b-4 active:border-b-0 active:translate-y-1 relative bg-amber-100 text-gray-800 border-amber-300 cursor-pointer hover:scale-105  "
+    class="w-full h-full min-h-0 rounded-lg flex items-center justify-center font-bold text-xs sm:text-sm md:text-xl lg:text-2xl select-none transition-all shadow-md p-0.5 sm:p-1 md:p-2 text-center break-words leading-tight sm:leading-none border-b-4 active:border-b-0 active:translate-y-1 relative bg-amber-100 text-gray-800 border-amber-300 cursor-pointer hover:scale-105  "
   >
     SOL
   </div>

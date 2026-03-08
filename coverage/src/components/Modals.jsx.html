@@ -1,0 +1,382 @@
+
+<!doctype html>
+<html lang="en">
+
+<head>
+    <title>Code coverage report for src/components/Modals.jsx</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="../../prettify.css" />
+    <link rel="stylesheet" href="../../base.css" />
+    <link rel="shortcut icon" type="image/x-icon" href="../../favicon.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style type='text/css'>
+        .coverage-summary .sorter {
+            background-image: url(../../sort-arrow-sprite.png);
+        }
+    </style>
+</head>
+    
+<body>
+<div class='wrapper'>
+    <div class='pad1'>
+        <h1><a href="../../index.html">All files</a> / <a href="index.html">src/components</a> Modals.jsx</h1>
+        <div class='clearfix'>
+            
+            <div class='fl pad1y space-right2'>
+                <span class="strong">73.33% </span>
+                <span class="quiet">Statements</span>
+                <span class='fraction'>11/15</span>
+            </div>
+        
+            
+            <div class='fl pad1y space-right2'>
+                <span class="strong">100% </span>
+                <span class="quiet">Branches</span>
+                <span class='fraction'>4/4</span>
+            </div>
+        
+            
+            <div class='fl pad1y space-right2'>
+                <span class="strong">85.71% </span>
+                <span class="quiet">Functions</span>
+                <span class='fraction'>6/7</span>
+            </div>
+        
+            
+            <div class='fl pad1y space-right2'>
+                <span class="strong">71.42% </span>
+                <span class="quiet">Lines</span>
+                <span class='fraction'>10/14</span>
+            </div>
+        
+            
+        </div>
+        <p class="quiet">
+            Press <em>n</em> or <em>j</em> to go to the next uncovered block, <em>b</em>, <em>p</em> or <em>k</em> for the previous block.
+        </p>
+        <template id="filterTemplate">
+            <div class="quiet">
+                Filter:
+                <input type="search" id="fileSearch">
+            </div>
+        </template>
+    </div>
+    <div class='status-line medium'></div>
+    <pre><table class="coverage">
+<tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
+<a name='L2'></a><a href='#L2'>2</a>
+<a name='L3'></a><a href='#L3'>3</a>
+<a name='L4'></a><a href='#L4'>4</a>
+<a name='L5'></a><a href='#L5'>5</a>
+<a name='L6'></a><a href='#L6'>6</a>
+<a name='L7'></a><a href='#L7'>7</a>
+<a name='L8'></a><a href='#L8'>8</a>
+<a name='L9'></a><a href='#L9'>9</a>
+<a name='L10'></a><a href='#L10'>10</a>
+<a name='L11'></a><a href='#L11'>11</a>
+<a name='L12'></a><a href='#L12'>12</a>
+<a name='L13'></a><a href='#L13'>13</a>
+<a name='L14'></a><a href='#L14'>14</a>
+<a name='L15'></a><a href='#L15'>15</a>
+<a name='L16'></a><a href='#L16'>16</a>
+<a name='L17'></a><a href='#L17'>17</a>
+<a name='L18'></a><a href='#L18'>18</a>
+<a name='L19'></a><a href='#L19'>19</a>
+<a name='L20'></a><a href='#L20'>20</a>
+<a name='L21'></a><a href='#L21'>21</a>
+<a name='L22'></a><a href='#L22'>22</a>
+<a name='L23'></a><a href='#L23'>23</a>
+<a name='L24'></a><a href='#L24'>24</a>
+<a name='L25'></a><a href='#L25'>25</a>
+<a name='L26'></a><a href='#L26'>26</a>
+<a name='L27'></a><a href='#L27'>27</a>
+<a name='L28'></a><a href='#L28'>28</a>
+<a name='L29'></a><a href='#L29'>29</a>
+<a name='L30'></a><a href='#L30'>30</a>
+<a name='L31'></a><a href='#L31'>31</a>
+<a name='L32'></a><a href='#L32'>32</a>
+<a name='L33'></a><a href='#L33'>33</a>
+<a name='L34'></a><a href='#L34'>34</a>
+<a name='L35'></a><a href='#L35'>35</a>
+<a name='L36'></a><a href='#L36'>36</a>
+<a name='L37'></a><a href='#L37'>37</a>
+<a name='L38'></a><a href='#L38'>38</a>
+<a name='L39'></a><a href='#L39'>39</a>
+<a name='L40'></a><a href='#L40'>40</a>
+<a name='L41'></a><a href='#L41'>41</a>
+<a name='L42'></a><a href='#L42'>42</a>
+<a name='L43'></a><a href='#L43'>43</a>
+<a name='L44'></a><a href='#L44'>44</a>
+<a name='L45'></a><a href='#L45'>45</a>
+<a name='L46'></a><a href='#L46'>46</a>
+<a name='L47'></a><a href='#L47'>47</a>
+<a name='L48'></a><a href='#L48'>48</a>
+<a name='L49'></a><a href='#L49'>49</a>
+<a name='L50'></a><a href='#L50'>50</a>
+<a name='L51'></a><a href='#L51'>51</a>
+<a name='L52'></a><a href='#L52'>52</a>
+<a name='L53'></a><a href='#L53'>53</a>
+<a name='L54'></a><a href='#L54'>54</a>
+<a name='L55'></a><a href='#L55'>55</a>
+<a name='L56'></a><a href='#L56'>56</a>
+<a name='L57'></a><a href='#L57'>57</a>
+<a name='L58'></a><a href='#L58'>58</a>
+<a name='L59'></a><a href='#L59'>59</a>
+<a name='L60'></a><a href='#L60'>60</a>
+<a name='L61'></a><a href='#L61'>61</a>
+<a name='L62'></a><a href='#L62'>62</a>
+<a name='L63'></a><a href='#L63'>63</a>
+<a name='L64'></a><a href='#L64'>64</a>
+<a name='L65'></a><a href='#L65'>65</a>
+<a name='L66'></a><a href='#L66'>66</a>
+<a name='L67'></a><a href='#L67'>67</a>
+<a name='L68'></a><a href='#L68'>68</a>
+<a name='L69'></a><a href='#L69'>69</a>
+<a name='L70'></a><a href='#L70'>70</a>
+<a name='L71'></a><a href='#L71'>71</a>
+<a name='L72'></a><a href='#L72'>72</a>
+<a name='L73'></a><a href='#L73'>73</a>
+<a name='L74'></a><a href='#L74'>74</a>
+<a name='L75'></a><a href='#L75'>75</a>
+<a name='L76'></a><a href='#L76'>76</a>
+<a name='L77'></a><a href='#L77'>77</a>
+<a name='L78'></a><a href='#L78'>78</a>
+<a name='L79'></a><a href='#L79'>79</a>
+<a name='L80'></a><a href='#L80'>80</a>
+<a name='L81'></a><a href='#L81'>81</a>
+<a name='L82'></a><a href='#L82'>82</a>
+<a name='L83'></a><a href='#L83'>83</a>
+<a name='L84'></a><a href='#L84'>84</a>
+<a name='L85'></a><a href='#L85'>85</a>
+<a name='L86'></a><a href='#L86'>86</a>
+<a name='L87'></a><a href='#L87'>87</a>
+<a name='L88'></a><a href='#L88'>88</a>
+<a name='L89'></a><a href='#L89'>89</a>
+<a name='L90'></a><a href='#L90'>90</a>
+<a name='L91'></a><a href='#L91'>91</a>
+<a name='L92'></a><a href='#L92'>92</a>
+<a name='L93'></a><a href='#L93'>93</a>
+<a name='L94'></a><a href='#L94'>94</a>
+<a name='L95'></a><a href='#L95'>95</a>
+<a name='L96'></a><a href='#L96'>96</a>
+<a name='L97'></a><a href='#L97'>97</a>
+<a name='L98'></a><a href='#L98'>98</a>
+<a name='L99'></a><a href='#L99'>99</a>
+<a name='L100'></a><a href='#L100'>100</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import React from 'react';
+&nbsp;
+export const InfoModal = ({ title, text, onClose }) =&gt; (
+    &lt;div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-6 animate-fadeIn" onClick={onClose}&gt;
+        &lt;div className="bg-slate-800 p-6 rounded-xl max-w-sm text-center border border-slate-600 shadow-2xl"&gt;
+            &lt;h3 className="text-amber-400 font-bold text-xl mb-3"&gt;{title}&lt;/h3&gt;
+            &lt;p className="text-gray-300 mb-6"&gt;{text}&lt;/p&gt;
+            &lt;button onClick={onClose} className="bg-slate-600 hover:bg-slate-500 text-white font-bold py-2 px-6 rounded-lg"&gt;Cerrar&lt;/button&gt;
+        &lt;/div&gt;
+    &lt;/div&gt;
+);
+&nbsp;
+export const RulesModal = ({ onClose }) =&gt; (
+    &lt;div className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4 animate-fadeIn" onClick={onClose}&gt;
+        &lt;div className="bg-slate-800 text-white p-6 rounded-xl max-w-md w-full shadow-2xl border border-slate-600 overflow-y-auto max-h-[90vh]" onClick={e =&gt; e.stopPropagation()}&gt;
+            &lt;h2 className="text-3xl font-black text-amber-400 mb-6 text-center border-b border-slate-600 pb-4"&gt;📜 REGLAS DEL JUEGO&lt;/h2&gt;
+&nbsp;
+            &lt;div className="space-y-5 text-sm text-gray-300 leading-relaxed"&gt;
+&nbsp;
+                &lt;div&gt;
+                    &lt;h3 className="text-white font-bold text-lg mb-1"&gt;1. Preparación y Equipos&lt;/h3&gt;
+                    &lt;p&gt;Dividid el grupo en dos: &lt;strong className="text-red-400"&gt;Equipo Rojo&lt;/strong&gt; y &lt;strong className="text-blue-400"&gt;Equipo Azul&lt;/strong&gt;. Elegid un Capitán por equipo. El juego elegirá al azar quién empieza.&lt;/p&gt;
+                    &lt;div className="mt-2 bg-slate-700/50 p-2 rounded border-l-4 border-amber-500"&gt;
+                        &lt;p className="text-xs text-gray-300"&gt;💡 &lt;strong&gt;¿Por qué un equipo tiene una palabra más?&lt;/strong&gt;&lt;br /&gt;El equipo que empieza tiene ventaja de iniciativa, por lo que para equilibrarlo debe adivinar &lt;strong&gt;9 palabras&lt;/strong&gt;, mientras que el segundo equipo solo &lt;strong&gt;8&lt;/strong&gt;.&lt;/p&gt;
+                    &lt;/div&gt;
+                &lt;/div&gt;
+&nbsp;
+                &lt;div&gt;
+                    &lt;h3 className="text-white font-bold text-lg mb-1"&gt;2. Significado de las Cartas&lt;/h3&gt;
+                    &lt;ul className="space-y-2 mt-2"&gt;
+                        &lt;li className="flex items-center gap-2"&gt;&lt;div className="w-4 h-4 bg-red-500 rounded shadow"&gt;&lt;/div&gt; &lt;span&gt;&lt;strong&gt;Agente Rojo:&lt;/strong&gt; Punto para el equipo Rojo.&lt;/span&gt;&lt;/li&gt;
+                        &lt;li className="flex items-center gap-2"&gt;&lt;div className="w-4 h-4 bg-blue-500 rounded shadow"&gt;&lt;/div&gt; &lt;span&gt;&lt;strong&gt;Agente Azul:&lt;/strong&gt; Punto para el equipo Azul.&lt;/span&gt;&lt;/li&gt;
+                        &lt;li className="flex items-center gap-2"&gt;&lt;div className="w-4 h-4 bg-amber-200 rounded shadow"&gt;&lt;/div&gt; &lt;span&gt;&lt;strong&gt;Civil Inocente:&lt;/strong&gt; Gente normal. Si lo tocas, tu turno &lt;strong&gt;termina inmediatamente&lt;/strong&gt;.&lt;/span&gt;&lt;/li&gt;
+                        &lt;li className="flex items-center gap-2"&gt;&lt;div className="w-4 h-4 bg-gray-900 border border-white rounded shadow"&gt;&lt;/div&gt; &lt;span className="text-red-400 font-bold"&gt;¡EL ASESINO! Si lo tocas, PIERDES LA PARTIDA al instante.&lt;/span&gt;&lt;/li&gt;
+                    &lt;/ul&gt;
+                &lt;/div&gt;
+&nbsp;
+                &lt;div&gt;
+                    &lt;h3 className="text-white font-bold text-lg mb-1"&gt;3. Dinámica del Turno&lt;/h3&gt;
+                    &lt;p&gt;El Capitán da una pista: &lt;strong&gt;PALABRA + NÚMERO&lt;/strong&gt; (Ej: &lt;em&gt;"Volar, 2"&lt;/em&gt;). O hace un &lt;strong&gt;DIBUJO&lt;/strong&gt; si ese modo está activo.&lt;/p&gt;
+                    &lt;ul className="list-disc pl-5 mt-1 space-y-1"&gt;
+                        &lt;li&gt;&lt;strong&gt;Si aciertas:&lt;/strong&gt; Puedes seguir adivinando.&lt;/li&gt;
+                        &lt;li&gt;&lt;strong&gt;Si fallas (Civil o Equipo contrario):&lt;/strong&gt; Tu turno termina. &lt;br /&gt;&lt;span className="text-xs text-gray-400"&gt;(Nota: Si revelas una carta del rival, ¡le regalas el punto!)&lt;/span&gt;&lt;/li&gt;
+                        &lt;li&gt;&lt;strong&gt;¿Cuántas puedo tocar?&lt;/strong&gt; Puedes intentar adivinar el número que dijo el capitán &lt;strong&gt;más una extra&lt;/strong&gt; (por si te quedó una pendiente de turnos anteriores). Puedes plantarte cuando quieras.&lt;/li&gt;
+                    &lt;/ul&gt;
+                &lt;/div&gt;
+&nbsp;
+                &lt;div className="bg-red-900/30 p-4 rounded-lg border border-red-800/50"&gt;
+                    &lt;h3 className="text-red-400 font-bold text-lg mb-1"&gt;⚠️ CÓDIGO DE HONOR&lt;/h3&gt;
+                    &lt;ul className="list-disc pl-5 mt-2 space-y-1"&gt;
+                        &lt;li&gt;Nada de gestos o caras al ver lo que tocan los agentes.&lt;/li&gt;
+                        &lt;li&gt;No se puede decir parte de la palabra de la mesa.&lt;/li&gt;
+                        &lt;li&gt;No se pueden dar pistas sobre la letra inicial o posición.&lt;/li&gt;
+                    &lt;/ul&gt;
+                &lt;/div&gt;
+            &lt;/div&gt;
+&nbsp;
+            &lt;button onClick={onClose} className="w-full mt-6 bg-slate-200 hover:bg-amber-600 text-black font-bold py-4 rounded-lg transition shadow-lg"&gt;
+                ¡ENTENDIDO!
+            &lt;/button&gt;
+        &lt;/div&gt;
+    &lt;/div&gt;
+);
+&nbsp;
+export const DrawingGalleryModal = ({ drawings, onClose, roomCode }) =&gt; {
+    if (!drawings || drawings.length === 0) return null;
+&nbsp;
+    return (
+        &lt;div className="fixed inset-0 bg-black/90 z-[100] flex flex-col items-center justify-center p-4 animate-fadeIn" onClick={onClose}&gt;
+            &lt;div className="bg-slate-800 p-6 rounded-xl w-full max-w-4xl flex flex-col gap-4 shadow-2xl relative max-h-[90vh]" onClick={e =&gt; e.stopPropagation()}&gt;
+                &lt;button onClick={onClose} className="absolute top-2 right-2 text-white hover:text-red-500 font-bold text-2xl px-2"&gt;✕&lt;/button&gt;
+                &lt;div className="flex justify-between items-center sm:px-4 mt-2"&gt;
+                    &lt;h3 className="text-white font-black text-2xl sm:text-3xl uppercase"&gt;🖼️ Galería de Dibujos&lt;/h3&gt;
+                &lt;/div&gt;
+&nbsp;
+                &lt;div className="overflow-y-auto w-full p-2 bg-slate-900 rounded-lg border border-slate-700"&gt;
+                    &lt;div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 auto-rows-max"&gt;
+                        {drawings.map((imgSrc, index) =&gt; (
+                            &lt;div key={index} className="bg-white p-2 rounded-lg flex flex-col items-center gap-2 shadow-lg relative group"&gt;
+                                &lt;span className="absolute -top-3 -left-3 bg-amber-500 text-black font-black w-8 h-8 flex items-center justify-center rounded-full shadow border-2 border-white"&gt;{index + 1}&lt;/span&gt;
+                                &lt;div className="border-2 border-black w-full h-48 bg-white flex items-center justify-center overflow-hidden rounded"&gt;
+                                    &lt;img src={imgSrc} alt={`Dibujo ${index + 1}`} className="w-full h-full object-contain" /&gt;
+                                &lt;/div&gt;
+                                &lt;button onClick={<span class="fstat-no" title="function not covered" >() =&gt; {</span>
+                                    const a = <span class="cstat-no" title="statement not covered" >document.createElement('a');</span>
+<span class="cstat-no" title="statement not covered" >                                    a.href = imgSrc;</span>
+<span class="cstat-no" title="statement not covered" >                                    a.download = `dibujo-cs-${roomCode}-${index + 1}.png`;</span>
+<span class="cstat-no" title="statement not covered" >                                    a.click();</span>
+                                }} className="bg-slate-800 hover:bg-slate-700 text-white font-bold py-2 px-4 rounded w-full text-sm transition flex justify-center items-center gap-2"&gt;
+                                    💾 Descargar
+                                &lt;/button&gt;
+                            &lt;/div&gt;
+                        ))}
+                    &lt;/div&gt;
+                &lt;/div&gt;
+            &lt;/div&gt;
+        &lt;/div&gt;
+    );
+};
+&nbsp;</pre></td></tr></table></pre>
+
+                <div class='push'></div><!-- for sticky footer -->
+            </div><!-- /wrapper -->
+            <div class='footer quiet pad2 space-top1 center small'>
+                Code coverage generated by
+                <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
+                at 2026-03-08T10:34:13.548Z
+            </div>
+        <script src="../../prettify.js"></script>
+        <script>
+            window.onload = function () {
+                prettyPrint();
+            };
+        </script>
+        <script src="../../sorter.js"></script>
+        <script src="../../block-navigation.js"></script>
+    </body>
+</html>
+    

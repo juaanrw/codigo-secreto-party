@@ -3,15 +3,15 @@
 <html lang="en">
 
 <head>
-    <title>Code coverage report for firebase.js</title>
+    <title>Code coverage report for src/components/Timer.jsx</title>
     <meta charset="utf-8" />
-    <link rel="stylesheet" href="prettify.css" />
-    <link rel="stylesheet" href="base.css" />
-    <link rel="shortcut icon" type="image/x-icon" href="favicon.png" />
+    <link rel="stylesheet" href="../../prettify.css" />
+    <link rel="stylesheet" href="../../base.css" />
+    <link rel="shortcut icon" type="image/x-icon" href="../../favicon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <style type='text/css'>
         .coverage-summary .sorter {
-            background-image: url(sort-arrow-sprite.png);
+            background-image: url(../../sort-arrow-sprite.png);
         }
     </style>
 </head>
@@ -19,34 +19,34 @@
 <body>
 <div class='wrapper'>
     <div class='pad1'>
-        <h1><a href="index.html">All files</a> firebase.js</h1>
+        <h1><a href="../../index.html">All files</a> / <a href="index.html">src/components</a> Timer.jsx</h1>
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">93.33% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>4/4</span>
+                <span class='fraction'>14/15</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">58.33% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>0/0</span>
+                <span class='fraction'>7/12</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>0/0</span>
+                <span class='fraction'>5/5</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>4/4</span>
+                <span class='fraction'>12/12</span>
             </div>
         
             
@@ -86,14 +86,22 @@
 <a name='L21'></a><a href='#L21'>21</a>
 <a name='L22'></a><a href='#L22'>22</a>
 <a name='L23'></a><a href='#L23'>23</a>
-<a name='L24'></a><a href='#L24'>24</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L24'></a><a href='#L24'>24</a>
+<a name='L25'></a><a href='#L25'>25</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">10x</span>
+<span class="cline-any cline-yes">10x</span>
+<span class="cline-any cline-yes">10x</span>
+<span class="cline-any cline-yes">10x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -103,52 +111,47 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">3x</span>
-<span class="cline-any cline-yes">3x</span>
-<span class="cline-any cline-yes">3x</span></td><td class="text"><pre class="prettyprint lang-js">// Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
-import { getDatabase } from "firebase/database";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import React, { useState, useEffect } from 'react';
 &nbsp;
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
-const firebaseConfig = {
-  apiKey: "AIzaSyBs_hJ-daOlDqqCULv2_ImmcC5WC2eVfTc",
-  authDomain: "codigo-secreto-party.firebaseapp.com",
-  databaseURL: "https://codigo-secreto-party-default-rtdb.europe-west1.firebasedatabase.app",
-  projectId: "codigo-secreto-party",
-  storageBucket: "codigo-secreto-party.firebasestorage.app",
-  messagingSenderId: "914961060476",
-  appId: "1:914961060476:web:069f685f985bd4ce176ff9",
-  measurementId: "G-9J9S8NKWYX"
+const Timer = ({ turnTimestamp, turnDuration, isPaused }) =&gt; {
+    const [timeLeft, setTimeLeft] = useState(turnDuration);
+    useEffect(() =&gt; {
+        <span class="missing-if-branch" title="if path not taken" >I</span>if (isPaused) <span class="cstat-no" title="statement not covered" >return;</span>
+        const interval = setInterval(() =&gt; {
+            const now = Date.now();
+            const elapsed = Math.floor((now - turnTimestamp) / 1000);
+            const remaining = turnDuration - elapsed;
+            setTimeLeft(remaining &gt; 0 ? remaining : <span class="branch-1 cbranch-no" title="branch not covered" >0)</span>;
+        }, 1000);
+        return () =&gt; clearInterval(interval);
+    }, [turnTimestamp, turnDuration, isPaused]);
+    const formatTime = (seconds) =&gt; `${Math.floor(seconds / 60)}:${(seconds % 60) &lt; 10 ? '0' : ''}${seconds % 60}`;
+&nbsp;
+    return (
+        &lt;div className={`font-mono font-bold text-xl px-3 py-1 rounded flex items-center gap-2 ${timeLeft &lt; 10 &amp;&amp; <span class="branch-1 cbranch-no" title="branch not covered" >!isPaused ? <span class="branch-0 cbranch-no" title="branch not covered" >'</span>bg-red-600 animate-pulse' : '</span>bg-black/50'}`}&gt;
+            {isPaused ? <span class="branch-0 cbranch-no" title="branch not covered" >&lt;span className="text-yellow-400"&gt;⏸️ ESPERA&lt;/span&gt; : `</span>⏱ ${formatTime(timeLeft)}`}
+        &lt;/div&gt;
+    );
 };
 &nbsp;
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
-export const db = getDatabase(app);</pre></td></tr></table></pre>
+export default Timer;
+&nbsp;</pre></td></tr></table></pre>
 
                 <div class='push'></div><!-- for sticky footer -->
             </div><!-- /wrapper -->
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-02-09T15:34:46.145Z
+                at 2026-03-08T10:34:13.548Z
             </div>
-        <script src="prettify.js"></script>
+        <script src="../../prettify.js"></script>
         <script>
             window.onload = function () {
                 prettyPrint();
             };
         </script>
-        <script src="sorter.js"></script>
-        <script src="block-navigation.js"></script>
+        <script src="../../sorter.js"></script>
+        <script src="../../block-navigation.js"></script>
     </body>
 </html>
     
