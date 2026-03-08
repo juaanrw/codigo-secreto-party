@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { generateBoard, cleanupOldRooms, playSound } from '../utils';
+import { generateBoard, playSound } from '../utils';
 
 vi.mock('../firebase', () => ({
     db: {}
@@ -50,12 +50,12 @@ describe('utils', () => {
         it('ejecuta un sonido sin romper la aplicación', async () => {
             // Mock global Audio
             const mockPlay = vi.fn().mockResolvedValue(true);
-            global.Audio = vi.fn().mockImplementation(function () {
+            vi.stubGlobal('Audio', vi.fn().mockImplementation(function () {
                 return {
                     play: mockPlay,
                     volume: 1
                 };
-            });
+            }));
 
             // Solo comprobamos que no lanza throws
             expect(() => {
