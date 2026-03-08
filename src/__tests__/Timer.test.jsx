@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, screen, act } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { Timer } from '../App';
+import Timer from '../components/Timer';
 
 describe('Componente <Timer />', () => {
     beforeEach(() => {
@@ -20,10 +20,10 @@ describe('Componente <Timer />', () => {
 
     it('Avanza el tiempo visualmente', () => {
         render(<Timer turnTimestamp={Date.now()} turnDuration={120} isPaused={false} />);
-        
+
         // Avanzamos el reloj 10 segundos mágicamente
         act(() => {
-            vi.advanceTimersByTime(10000); 
+            vi.advanceTimersByTime(10000);
         });
 
         // Debería poner 1:50
